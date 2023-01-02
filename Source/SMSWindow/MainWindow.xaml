@@ -1,0 +1,126 @@
+﻿<Window x:Class="SMSWindow.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SMSWindow"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        xmlns:ports="clr-namespace:System.IO.Ports;assembly=System.IO.Ports"
+        xmlns:pdu="clr-namespace:SMSTerminal.PDU;assembly=SMSTerminal"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Loaded="MainWindow_OnLoaded"
+        Closing="MainWindow_OnClosing"
+        Title="SMS Test Application" Height="820" Width="1200">
+    <Window.Resources>
+        <ObjectDataProvider x:Key='SMSEncodingList' ObjectType='{x:Type sys:Enum}' MethodName='GetValues'>
+            <ObjectDataProvider.MethodParameters>
+                <x:TypeExtension TypeName='pdu:SMSEncoding'/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="50" />
+            <RowDefinition Height="100" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+
+        <DockPanel Grid.Row="1" Grid.Column="0">
+            <TextBox Name="TextBoxOutgoingSMSLog" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" TextChanged="TextBox_OnTextChanged" />
+        </DockPanel>
+        <DockPanel Grid.Row="2" Grid.Column="0" >
+            <Label Content="SMS Message :" DockPanel.Dock="Top"></Label>
+            <TextBox Name="TextBoxSMSText" TextWrapping="Wrap"  DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Visible" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextChanged="TextBoxSMSText_OnTextChanged"/>
+        </DockPanel>
+
+        <DockPanel Grid.Row="0" Grid.Column="0">
+            <Label Content="Outgoing SMS" HorizontalAlignment="Left"></Label>
+        </DockPanel>
+        <DockPanel Grid.Row="0" Grid.Column="1">
+            <Label Content="Comms" HorizontalAlignment="Left"></Label>
+        </DockPanel>
+        <DockPanel Grid.Row="1" Grid.Column="1" Grid.RowSpan="3">
+            <TextBox Name="TextBoxModemLog" Height="370" DockPanel.Dock="Top" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
+            <DockPanel DockPanel.Dock="Bottom">
+                <Label Content="Errors :" DockPanel.Dock="Top"/>
+                <TextBox Name="TextBoxErrors" Height="180" DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" TextChanged="TextBox_OnTextChanged"/>
+            </DockPanel>
+        </DockPanel>
+        <DockPanel Grid.Row="0" Grid.Column="2">
+            <Label Content="Incoming SMS" HorizontalAlignment="Left"></Label>
+        </DockPanel>
+        <DockPanel Grid.Row="1" Grid.Column="2" Grid.RowSpan="3">
+            <DockPanel>
+                <TextBox Name="TextBoxIncomingSMS" VerticalScrollBarVisibility="Visible"  DockPanel.Dock="Top" TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
+            </DockPanel>
+        </DockPanel>
+        <StackPanel Grid.Row="3" Grid.RowSpan="3" Grid.Column="0" Orientation="Vertical" HorizontalAlignment="Stretch">
+            <DockPanel Margin="0,5,0,5">
+                <Label Content="Message Encoding"/>
+                <ComboBox Name="ComboBoxEncoding" IsReadOnly="True" SelectedIndex="0" HorizontalAlignment="Right"  ItemsSource='{Binding Source={StaticResource SMSEncodingList}}' SelectionChanged="ComboBoxEncoding_OnSelectionChanged"/>
+            </DockPanel>
+            <DockPanel Margin="0,5,0,5">
+                <Label Content="Modem" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                <ComboBox Name="ComboBoxModem" IsReadOnly="True"  Width="120" DockPanel.Dock="Right" HorizontalAlignment="Right"></ComboBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Recipient Tph" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                <TextBox Name="TextBoxTphNumber" Width="150" Height="22" DockPanel.Dock="Right" HorizontalAlignment="Right" ></TextBox>
+            </DockPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Label Content="chars : " DockPanel.Dock="Left"/>
+                <ComboBox Name="ComboBoxLongSMS" SelectedValuePath="Content" DockPanel.Dock="Right" Height="22" IsReadOnly="True" SelectedIndex="0" SelectionChanged="ComboBoxLongSMS_OnSelectionChanged">
+                    <ComboBoxItem>160</ComboBoxItem>
+                    <ComboBoxItem>170</ComboBoxItem>
+                    <ComboBoxItem>330</ComboBoxItem>
+                    <ComboBoxItem>490</ComboBoxItem>
+                    <ComboBoxItem>650</ComboBoxItem>
+                    <ComboBoxItem>810</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+            <DockPanel>
+                <Button Name="ButtonSend" Content="Send" Height="22"  Margin="0,5,0,5" Click="ButtonSend_OnClick" />
+            </DockPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Name="ButtonClearErrors" Content="Clear Errors" Height="22" Margin="0,5,10,5" Click="ButtonClearErrors_OnClick"/>
+            <Button Name="ButtonClearModemLog" Content="Clear Comms" Height="22" Margin="0,5,10,5" Click="ButtonClearModemLog_OnClick"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal">
+                <Button Name="ButtonConnect" Content="Connect Modem" Height="22" Margin="0,5,10,5" Click="ButtonConnect_OnClick"/>
+                <Button Name="ButtonDisconnect" Content="Disconnect Modem" Height="22" Margin="0,5,10,5" Click="ButtonDisconnect_OnClick"/>
+                <Button Name="ButtonSettings" Content="Settings" Height="22" Margin="0,5,10,5" Click="ButtonSettings_OnClick" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Name="ButtonErrorCommand" Content="Error Command" Height="22" Margin="0,5,10,5" Click="ButtonErrorCommand_OnClick" />
+                <Button Name="ButtonRestartModem" Content="Restart Modem" Height="22" Margin="0,5,10,5" Click="ButtonRestartModem_OnClick" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Name="ButtonReadNewSMS" Content="Read New SMS" Height="22" Margin="0,5,10,5" Click="ButtonReadNewSMS_OnClick" />
+                <Button Name="ButtonReadOldSMS" Content="Read Old SMS" Height="22" Margin="0,5,10,5" Click="ButtonReadOldSMS_OnClick" />
+                <Button Name="ButtonNetworkStatus" Content="Network Status" Height="22" Margin="0,5,10,5" Click="ButtonNetworkStatus_OnClick"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Name="ButtonClearInSMS" Content="Clear SMS" Height="22" Margin="0,5,10,5" Click="ButtonClearIncomingSMS_OnClick"/>
+        </StackPanel>
+        <StackPanel Grid.Row="5" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Name="ButtonClose" Content="Close" Height="22" Margin="0,5,10,5" Click="ButtonClose_OnClick" />
+        </StackPanel>
+    </Grid>
+
+</Window>

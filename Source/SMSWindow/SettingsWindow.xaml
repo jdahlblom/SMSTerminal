@@ -1,0 +1,116 @@
+﻿<Window x:Class="SMSWindow.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SMSWindow"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        xmlns:ports="clr-namespace:System.IO.Ports;assembly=System.IO.Ports"
+        xmlns:pdu="clr-namespace:SMSTerminal.PDU;assembly=SMSTerminal"
+        xmlns:general="clr-namespace:SMSTerminal.General;assembly=SMSTerminal"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Loaded="SettingsWindow_OnLoaded"
+        Closing="SettingsWindow_OnClosing"
+        Background="Beige"
+        Title="Settings" Height="500" Width="300">
+
+    <Window.Resources>
+        <ObjectDataProvider x:Key='HandShakeList' ObjectType='{x:Type sys:Enum}' MethodName='GetValues'>
+            <ObjectDataProvider.MethodParameters>
+                <x:TypeExtension TypeName='ports:Handshake'/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key='StopBitList' ObjectType='{x:Type sys:Enum}' MethodName='GetValues'>
+            <ObjectDataProvider.MethodParameters>
+                <x:TypeExtension TypeName='ports:StopBits'/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key='BaudRateList' ObjectType='{x:Type sys:Enum}' MethodName='GetValues'>
+            <ObjectDataProvider.MethodParameters>
+                <x:TypeExtension TypeName='general:BaudRate'/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key='ParityList' ObjectType='{x:Type sys:Enum}' MethodName='GetValues'>
+            <ObjectDataProvider.MethodParameters>
+                <x:TypeExtension TypeName='ports:Parity'/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" >
+            <DockPanel>
+                <Label Content="COM Port" VerticalAlignment="Center"/>
+                <TextBox Name="TextBoxComPort" Text="COM1" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Width="50" Margin="0,5,0,5" ></TextBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Baud Rate" VerticalAlignment="Center"/>
+                <ComboBox Name="ComboBoxBaudRate" IsReadOnly="True" SelectedIndex="0" ItemsSource='{Binding Source={StaticResource BaudRateList}}' HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Data Bits" VerticalAlignment="Center"/>
+                <TextBox Name="TextBoxDataBits" Text="8" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Width="50" Margin="0,5,0,5" ></TextBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Stop Bits" VerticalAlignment="Center"/>
+                <ComboBox Name="ComboBoxStopBits" IsReadOnly="True" SelectedIndex="0" ItemsSource='{Binding Source={StaticResource StopBitList}}' HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Parity" VerticalAlignment="Center"/>
+                <ComboBox Name="ComboBoxParity" IsReadOnly="True" SelectedIndex="0" ItemsSource='{Binding Source={StaticResource ParityList}}' HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Data Terminal Ready (DTR)" VerticalAlignment="Center"/>
+                <CheckBox Name="CheckBoxUseDTR" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"></CheckBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Request To Send (RTS)" VerticalAlignment="Center"/>
+                <CheckBox Name="CheckBoxUseRTS" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"></CheckBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="HandShake" VerticalAlignment="Center"/>
+                <ComboBox Name="ComboBoxHandShake" IsReadOnly="True" SelectedIndex="1" ItemsSource='{Binding Source={StaticResource HandShakeList}}' HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
+            </DockPanel>
+            <DockPanel/>
+            <DockPanel>
+                <Label Content="PIN1" VerticalAlignment="Center"/>
+                <TextBox Name="TextBoxPIN1"  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Width="50" Margin="0,5,0,5" ></TextBox>
+            </DockPanel>
+            <DockPanel/>
+            <DockPanel/>
+            <DockPanel>
+                <Label Content="Delete Read SMS From Modem" VerticalAlignment="Center"/>
+                <CheckBox Name="CheckBoxDeleteReadSMS" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"></CheckBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Disconnect Incoming Calls" VerticalAlignment="Center"/>
+                <CheckBox Name="CheckBoxDisconnectCalls" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"></CheckBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Use Call Forwarding" VerticalAlignment="Center"/>
+                <CheckBox Name="CheckBoxUseCallForwarding" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"></CheckBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Call Forwarding Tph" VerticalAlignment="Center"/>
+                <TextBox Name="TextBoxCallForwardTph"  Text="+123123456789" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Width="150" Margin="0,5,0,5" ></TextBox>
+            </DockPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                <Button Name="ButtonCancel" Content="Cancel" Margin="0,0,5,0" Click="ButtonCancel_OnClick"/>
+                <Button Name="ButtonSave" Content="Save" Click="ButtonSave_OnClick"/>
+            </StackPanel>
+
+
+
+
+
+        </StackPanel>
+    </Grid>
+
+</Window>
