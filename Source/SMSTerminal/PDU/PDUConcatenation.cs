@@ -30,7 +30,7 @@ namespace SMSTerminal.PDU
              *
              * Purge fragmentCSMSList of old entries that are likely to be orphans.
              */
-            //Single SMS are removed and added to the completeMessages list before proceeding.
+            //Single SMS are removed and added to the completeMessages list before proceeding with the CSMS.
             completeMessages.AddRange(pduModemMessages.FindAll(o => o.IsCMS == false));
             pduModemMessages.RemoveAll(o => o.IsCMS == false);
 
