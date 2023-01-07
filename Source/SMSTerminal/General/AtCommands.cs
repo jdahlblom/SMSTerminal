@@ -68,9 +68,15 @@ namespace SMSTerminal.General
         public const string ATDisableCallForwardingCommand = "AT+CCFC=0,0";
         public const string ATQueryCallForwardingStatusCommand = "AT+CCFC=0,2";
         //***********************************************************************
-        public const string ATNetworkStatusRequestCommand = "AT+CREG?";
         public const string ATPINStatusQueryCommand = "AT+CPIN?";
         public const string ATPINAuthCommand = "AT+CPIN=";
+        //***********************************************************************
+        public const string ATGetModemManufacturerCommand = "AT+CGMI";
+        public const string ATGetModemModelCommand = "AT+CGMM";
+        public const string ATGetIMSICommand = "AT+CIMI";
+        //Integrated Circuit Card Identification (ICCID). unique identification number for the SIM.
+        public const string ATGetICCIDCommand = "AT+CCID";
+        public const string ATNetworkStatusRequestCommand = "AT+CREG?";
         //***********************************************************************
         public const string ATForceError = "AT+ABCD";
         //***********************************************************************

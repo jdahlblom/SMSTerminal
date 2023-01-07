@@ -42,7 +42,8 @@ namespace SMSTerminal.Modem
                         {
                             Logger.Debug($"SerialPort.Buffer = {SerialPort.BytesToRead}");
                             var byteArray = new byte[SerialPort.BytesToRead];
-                            var bytesRead = await SerialPort.BaseStream.ReadAsync(byteArray, 0, byteArray.Length);
+                            var cts = new CancellationTokenSource(ModemTimings.MS1000);
+                            var bytesRead = await SerialPort.BaseStream.ReadAsync(byteArray, 0, byteArray.Length, cts.Token);
                             _incomingData.Append(Common.UsedEncoding.GetString(byteArray, 0, bytesRead));
                             if (await _messageParser.ParseModemOutput(_incomingData.ToString()))
                             {

@@ -12,7 +12,12 @@
         public const int MS300 = 300;
         public const int MS400 = 400;
         public const int MS500 = 500;
-        
+        public const int MS600 = 600;
+        public const int MS700 = 700;
+        public const int MS800 = 800;
+        public const int MS900 = 900;
+        public const int MS1000 = 1000;
+
 
         /// <summary>
         /// Delay after restart command before applying settings again.

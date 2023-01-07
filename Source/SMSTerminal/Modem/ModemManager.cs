@@ -164,6 +164,18 @@ namespace SMSTerminal.Modem
                     return false;
                 }
 
+                var infoCommand = new ATGetModemInformationCommand(modem);
+                if (!await modem.ExecuteCommand(infoCommand))
+                {
+                    Logger.Error($"Failed to retrieve modem information for Modem {modem.ModemId}. Modem not added to pool.");
+                    modem.Dispose();
+                    return false;
+                }
+
+                modem.GsmModemConfig.ModemManufacturer = infoCommand.Manufacturer;
+                modem.GsmModemConfig.ModemModel = infoCommand.Model;
+                modem.GsmModemConfig.IMSI = infoCommand.IMSI;
+                modem.GsmModemConfig.ICCID = infoCommand.ICCID;
                 _modems.Add(modem);
 
                 if (!await modem.ExecuteCommand(new ATReadSMSCommand(modem, SMSReadStatus.Unread)))

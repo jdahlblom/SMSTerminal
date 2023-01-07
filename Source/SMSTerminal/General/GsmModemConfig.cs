@@ -21,8 +21,12 @@ namespace SMSTerminal.General
         public bool LineSignalDtr { get; set; }
         public bool LineSignalRts { get; set; }
         public Handshake Handshake { get; set; }
-        public ModemType ModemUsed { get; } = ModemType.PDU;
-        public string ModemId => $"{ModemUsed}@{ComPort}";
+        public string ModemManufacturer { get; set; }
+        public string ModemModel { get; set; }
+        public string IMSI { get; set; }
+        public string ICCID { get; set; }
+        public string ModemId => $"{ModemManufacturer} {ModemModel}@{ComPort}";
+        //public string ModemId => $"{IMSI}@{ComPort}";
         public bool Enabled { get; set; }
         public string PIN1 { get; set; }
         public bool DeleteSMSFromModemWhenRead { get; set; }
