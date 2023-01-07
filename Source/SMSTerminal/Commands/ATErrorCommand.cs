@@ -3,21 +3,25 @@ using SMSTerminal.Interfaces;
 
 namespace SMSTerminal.Commands
 {
-    internal class ATErrorCommand : CommandBase
+    /// <summary>
+    /// Command used to deliberately cause error on the modem side.
+    /// Used to see application behaviour.
+    /// </summary>
+    internal class ATErrorCommand : ATCommandBase
     {
         public ATErrorCommand(IModem modem)
         {
             Modem = modem;
             CommandType = "[AT Error Command]";
-            var command = new Command(ATCommands.ATForceError, ATCommands.ATEndPart);
-            ModemCommandsList.Add(command);
+            var command = new ATCommand(General.ATCommands.ATForceError, General.ATCommands.ATEndPart);
+            ATCommandsList.Add(command);
         }
 
         public override CommandProgress Process(ModemData modemData)
         {
             try
             {
-                if (!modemData.Data.Contains(ModemCommandsList[CommandIndex].CommandString))
+                if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;
                 }

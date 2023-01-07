@@ -12,26 +12,29 @@ namespace SMSTerminal.Commands
         Unread
     }
 
-    internal class ReadSMSCommand : CommandBase
+    /// <summary>
+    /// Reads and parses SMS from the modem.
+    /// </summary>
+    internal class ATReadSMSCommand : ATCommandBase
     {
         private readonly string _commandString;
 
 
-        public ReadSMSCommand(IModem modem, SMSReadStatus smsReadStatus)
+        public ATReadSMSCommand(IModem modem, SMSReadStatus smsReadStatus)
         {
             Modem = modem;
             CommandType = $"[Read [{smsReadStatus}] SMS Command]";
             _commandString = smsReadStatus == SMSReadStatus.Read
-                ? ATCommands.ATReadReadSms
-                : ATCommands.ATReadUnreadSms;
-            ModemCommandsList.Add(new Command(_commandString, ATCommands.ATEndPart));
+                ? General.ATCommands.ATReadReadSms
+                : General.ATCommands.ATReadUnreadSms;
+            ATCommandsList.Add(new ATCommand(_commandString, General.ATCommands.ATEndPart));
         }
 
         public override CommandProgress Process(ModemData modemData)
         {
             try
             {
-                if (!modemData.Data.Contains(ModemCommandsList[CommandIndex].CommandString))
+                if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;
                 }
@@ -61,7 +64,7 @@ namespace SMSTerminal.Commands
                         if (!Modem.GsmModemConfig.DeleteSMSFromModemWhenRead) break;
                         foreach (var i in modemMessage.MemorySlots)
                         {
-                            ModemCommandsList.Add(new Command(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i));
+                            ATCommandsList.Add(new ATCommand(General.ATCommands.ATDeleteSmsAtMemorySlot + i, General.ATCommands.ATEndPart, i));
                         }
                     }
 
@@ -75,24 +78,24 @@ namespace SMSTerminal.Commands
                         if (fragmentCSMSMessage.DeletedFromTA) continue;
                         foreach (var i in fragmentCSMSMessage.MemorySlots)
                         {
-                            ModemCommandsList.Add(new Command(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i, "Fragment"));
+                            ATCommandsList.Add(new ATCommand(General.ATCommands.ATDeleteSmsAtMemorySlot + i, General.ATCommands.ATEndPart, i, "Fragment"));
                             //fragmentCSMSMessage.DeletedFromTA = true;
                         }
                     }
 
                     return CommandProgress.NextCommand; //Start doing the delete commands
                 }
-                else if (modemData.Data.Contains(ATCommands.ATDeleteSmsAtMemorySlot))
+                else if (modemData.Data.Contains(General.ATCommands.ATDeleteSmsAtMemorySlot))
                 {
                     /*
                      * A SMS that belongs to a CSMS but hasn't yet been assembled because all parts haven't yet arrived.
                      */
-                    if(ModemCommandsList[CommandIndex].StringHolder == "Fragment")
+                    if(ATCommandsList[CommandIndex].StringHolder == "Fragment")
                     {
-                        PDUMessageParser.MarkFragmentDeletedTA(ModemCommandsList[CommandIndex].NumberHolder);
+                        PDUMessageParser.MarkFragmentDeletedTA(ATCommandsList[CommandIndex].NumberHolder);
                     }
-                    SendEvent($"SMS deleted from slot {ModemCommandsList[CommandIndex].NumberHolder}.");
-                    if (HasNextCommand)
+                    SendEvent($"SMS deleted from slot {ATCommandsList[CommandIndex].NumberHolder}.");
+                    if (HasNextATCommand)
                     {
                         return CommandProgress.NextCommand;
                     }

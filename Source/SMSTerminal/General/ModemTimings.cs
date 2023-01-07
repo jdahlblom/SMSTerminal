@@ -12,10 +12,7 @@
         public const int MS300 = 300;
         public const int MS400 = 400;
         public const int MS500 = 500;
-
-
-        public static int WaitBetweenSmsWrites { get; set; } = 100;
-        public static int WaitBetweenReads { get; set; } = 300;
+        
 
         /// <summary>
         /// Delay after restart command before applying settings again.
@@ -46,14 +43,6 @@
         public static int ChannelReadWait { get; set; } = 400;
         
         /// <summary>
-        /// Delay when a new ModemData has been retrieved until
-        /// it is processed. This helps slow down things so that
-        /// the modem has some breathing space. Too low and
-        /// modem starts acting up.
-        /// </summary>
-        public static int MessageProcessWait { get; set; } = 100;
-
-        /// <summary>
         /// CSMS, orphaned concatenated SMS that are fragmented will
         /// be deleted after this period.
         /// </summary>
@@ -70,13 +59,5 @@
         /// some time to be ready for AT commands.
         /// </summary>
         public static int WaitAfterSerialPortOpen { get; set; } = 5000;
-
-        /// <summary>
-        /// A timer polls for new SMS. This is because sometimes the
-        /// unsolicited messages doesn't work properly and there
-        /// can be SMS waiting on the modem.
-        /// </summary>
-        public static int PollForNewSMSInterval { get; set; } = 30000;
-
     }
 }

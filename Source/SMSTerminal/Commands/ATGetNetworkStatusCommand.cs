@@ -4,21 +4,24 @@ using SMSTerminal.Interfaces;
 
 namespace SMSTerminal.Commands
 {
-    internal class GetNetworkStatusCommand : CommandBase
+    /// <summary>
+    /// Returns network status, whether connected to mobile network or not.
+    /// </summary>
+    internal class ATGetNetworkStatusCommand : ATCommandBase
     {
-        public GetNetworkStatusCommand(IModem modem)
+        public ATGetNetworkStatusCommand(IModem modem)
         {
             Modem = modem;
             CommandType = "[Get Network Status Command]";
-            var command = new Command(ATCommands.ATNetworkStatusRequestCommand, ATCommands.ATEndPart);
-            ModemCommandsList.Add(command);
+            var command = new ATCommand(General.ATCommands.ATNetworkStatusRequestCommand, General.ATCommands.ATEndPart);
+            ATCommandsList.Add(command);
         }
 
         public override CommandProgress Process(ModemData modemData)
         {
             try
             {
-                if (!modemData.Data.Contains(ModemCommandsList[CommandIndex].CommandString))
+                if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;
                 }

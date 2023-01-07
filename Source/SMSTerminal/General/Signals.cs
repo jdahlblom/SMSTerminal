@@ -11,6 +11,9 @@ namespace SMSTerminal.General
         ReadingSMS
     }
 
+    /// <summary>
+    /// Thread safe signals used to e.g. not execute command if command is already being executed.
+    /// </summary>
     internal class Signals
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

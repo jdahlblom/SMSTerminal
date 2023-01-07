@@ -11,6 +11,10 @@ using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Modem;
 
+/// <summary>
+/// Communicates with modem over RS232.
+/// Executes commands.
+/// </summary>
 internal class Modem : IDisposable, IModem
 {
     public bool HaltForPINError { get; set; }
@@ -142,7 +146,7 @@ internal class Modem : IDisposable, IModem
 
             _previousCommand = command.CommandType;
             Signals.SetStarted(SignalType.ExecutingCommand);
-            await WriteTextData(command.CurrentATCommand.CommandString + command.CurrentATCommand.TerminationString);
+            await WriteTextData(command.CurrentATCommand.ATCommandString + command.CurrentATCommand.TerminationString);
             var done = false;
 
             while (!done)
@@ -159,7 +163,7 @@ internal class Modem : IDisposable, IModem
                         }
                     case CommandProgress.NextCommand:
                         {
-                            await WriteTextData(command.NextATCommand().CommandString + command.CurrentATCommand.TerminationString);
+                            await WriteTextData(command.NextATCommand().ATCommandString + command.CurrentATCommand.TerminationString);
                             break;
                         }
                     case CommandProgress.NotExpectedDataReply:
@@ -246,7 +250,7 @@ internal class Modem : IDisposable, IModem
                 await Task.Delay(ModemTimings.MS300);
             }
             Signals.SetStarted(SignalType.SendingSMS);
-            var command = new SendSMSCommand(this, outgoingSms);
+            var command = new ATSendSMSCommand(this, outgoingSms);
             return await ExecuteCommand(command);
         }
         finally
@@ -265,7 +269,7 @@ internal class Modem : IDisposable, IModem
                 await Task.Delay(ModemTimings.MS300);
             }
             Signals.SetStarted(SignalType.ReadingSMS);
-            var command = new ReadSMSCommand(this, smsReadStatus);
+            var command = new ATReadSMSCommand(this, smsReadStatus);
             return await ExecuteCommand(command);
         }
         finally

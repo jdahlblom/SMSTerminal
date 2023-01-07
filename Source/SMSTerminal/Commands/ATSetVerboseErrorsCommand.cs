@@ -3,30 +3,30 @@ using SMSTerminal.Interfaces;
 
 namespace SMSTerminal.Commands
 {
-    internal class SetGSMPhase2Command : CommandBase
+    /// <summary>
+    /// Enables verbose errors for CME, CMS errors instead
+    /// of just reporting the error number.
+    /// </summary>
+    internal class ATSetVerboseErrorsCommand : ATCommandBase
     {
-        public SetGSMPhase2Command(IModem modem)
+        public ATSetVerboseErrorsCommand(IModem modem)
         {
             Modem = modem;
-            CommandType = "[Set GSM Phase 2 Command]";
-            var command = new Command(ATCommands.ATGSMPhase2Command, ATCommands.ATEndPart);
-            ModemCommandsList.Add(command);
+            CommandType = "[Set Verbose Errors Command]";
+            var command = new ATCommand(General.ATCommands.UseVerboseErrorsCommand, General.ATCommands.ATEndPart);
+            ATCommandsList.Add(command);
         }
 
         public override CommandProgress Process(ModemData modemData)
         {
             try
             {
-                if (!modemData.Data.Contains(ModemCommandsList[CommandIndex].CommandString))
+                if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;
                 }
                 SetModemDataForCurrentCommand(modemData);
                 SendResultEvent();
-                if (modemData.HasError)
-                {
-                    return CommandProgress.Error;
-                }
             }
             catch (Exception e)
             {

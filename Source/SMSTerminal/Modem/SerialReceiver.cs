@@ -7,6 +7,9 @@ using SMSTerminal.Interfaces;
 
 namespace SMSTerminal.Modem
 {
+    /// <summary>
+    /// Handles reading from serial port.
+    /// </summary>
     internal class SerialReceiver : ISerialReceiver
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -43,6 +46,7 @@ namespace SMSTerminal.Modem
                             _incomingData.Append(Common.UsedEncoding.GetString(byteArray, 0, bytesRead));
                             if (await _messageParser.ParseModemOutput(_incomingData.ToString()))
                             {
+                                //All data was processed into ModemData so clear our buffer.
                                 _incomingData.Clear();
                             }
                         }

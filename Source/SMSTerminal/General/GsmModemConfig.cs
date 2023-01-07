@@ -2,6 +2,9 @@ using System.IO.Ports;
 
 namespace SMSTerminal.General
 {
+    /// <summary>
+    /// Holds basic serial port and modem configurations.
+    /// </summary>
     public class GsmModemConfig
     {
         public string ComPort { get; set; }

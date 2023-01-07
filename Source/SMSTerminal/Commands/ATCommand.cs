@@ -3,17 +3,17 @@ using SMSTerminal.General;
 
 namespace SMSTerminal.Commands
 {
-    internal class Command
+    internal class ATCommand
     {
-        public Command(string commandString, string terminationString, int numberHolder = 0, string stringHolder = null)
+        public ATCommand(string atCommandString, string terminationString, int numberHolder = 0, string stringHolder = null)
         {
-            CommandString = commandString;
+            ATCommandString = atCommandString;
             TerminationString = terminationString;
             NumberHolder = numberHolder;
             StringHolder = stringHolder;
         }
 
-        public string CommandString { get; }
+        public string ATCommandString { get; }
         public string TerminationString { get; }
         private bool HasResult => ModemData != null && ModemData.ModemResult != ModemResultEnum.None;
         public ModemData ModemData { get; set; }

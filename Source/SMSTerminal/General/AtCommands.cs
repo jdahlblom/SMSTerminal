@@ -101,16 +101,16 @@ namespace SMSTerminal.General
 
         public static bool ContainsSMSReadCommand(string data)
         {
-            return data.Contains(ATCommands.ATReadUnreadSms) ||
-                   data.Contains(ATCommands.ATReadReadSms) ||
-                   data.Contains(ATCommands.ATReadAllSms);
+            return data.Contains(ATReadUnreadSms) ||
+                   data.Contains(ATReadReadSms) ||
+                   data.Contains(ATReadAllSms);
         }
 
         public static void RemoveSMSReadCommand(ref string data)
         {
-            data = data.Replace(ATCommands.ATReadUnreadSms, "")
-                .Replace(ATCommands.ATReadReadSms, "")
-                .Replace(ATCommands.ATReadAllSms, "");
+            data = data.Replace(ATReadUnreadSms, "")
+                .Replace(ATReadReadSms, "")
+                .Replace(ATReadAllSms, "");
         }
 
         //***********************************************************************

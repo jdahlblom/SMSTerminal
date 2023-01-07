@@ -4,15 +4,17 @@ using SMSTerminal.Interfaces;
 namespace SMSTerminal.Commands
 {
     /// <summary>
-    /// Restarts the modem.
+    /// Enables GSM Phase 2 and enables unsolicited New Message Indication.
+    /// With this SMSTerminal is notified automatically when there are new
+    /// SMS waiting the be read.
     /// </summary>
-    internal class ATRestartModemCommand : ATCommandBase
+    internal class ATSetGSMPhase2Command : ATCommandBase
     {
-        public ATRestartModemCommand(IModem modem)
+        public ATSetGSMPhase2Command(IModem modem)
         {
             Modem = modem;
-            CommandType = "[AT Restart Modem Command]";
-            var command = new ATCommand(General.ATCommands.ATRestartModem, General.ATCommands.ATEndPart);
+            CommandType = "[Set GSM Phase 2 Command]";
+            var command = new ATCommand(General.ATCommands.ATGSMPhase2Command, General.ATCommands.ATEndPart);
             ATCommandsList.Add(command);
         }
 

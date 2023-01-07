@@ -8,7 +8,7 @@ namespace SMSTerminal.Interfaces
     {
         /// <summary>
         /// If a modem response was given to a command
-        /// it wasn't related to this will be returned.
+        /// it wasn't related to then this will be returned.
         /// </summary>
         NotExpectedDataReply,
         NextCommand,
@@ -23,9 +23,9 @@ namespace SMSTerminal.Interfaces
         /// </summary>
         string CommandType { get; }
         void SetModem(IModem modem);
-        List<Command> ModemCommands { get; }
-        Command CurrentATCommand { get; }
-        Command NextATCommand();
+        List<ATCommand> ATCommands { get; }
+        ATCommand CurrentATCommand { get; }
+        ATCommand NextATCommand();
 
         /// <summary>
         /// This is the final result of the command

@@ -5,11 +5,14 @@ using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Commands
 {
-    internal class SendSMSCommand : CommandBase
+    /// <summary>
+    /// Sends SMS
+    /// </summary>
+    internal class ATSendSMSCommand : ATCommandBase
     {
         private readonly OutgoingSms _outgoingSms;
 
-        public SendSMSCommand(IModem modem, OutgoingSms outgoingSms)
+        public ATSendSMSCommand(IModem modem, OutgoingSms outgoingSms)
         {
             Modem = modem;
             _outgoingSms = outgoingSms;
@@ -21,7 +24,7 @@ namespace SMSTerminal.Commands
         {
             try
             {
-                if (!modemData.Data.Contains(ModemCommandsList[CommandIndex].CommandString))
+                if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;
                 }
@@ -46,7 +49,7 @@ namespace SMSTerminal.Commands
                 if (CommandIndex % 2 == 1)
                 {
                     SendResultEvent();
-                    return HasNextCommand ? CommandProgress.NextCommand : CommandProgress.Finished;
+                    return HasNextATCommand ? CommandProgress.NextCommand : CommandProgress.Finished;
                 }
             }
             catch (Exception e)
@@ -80,9 +83,9 @@ namespace SMSTerminal.Commands
             foreach (var pdu in pduArray)
             {
                 //Add AT command to prepare modem for SMS data
-                ModemCommandsList.Add(new Command(ATCommands.ATSendSmsPDU + (pdu.Length - 2) / 2, ATCommands.ATEndPart));
+                ATCommandsList.Add(new ATCommand(General.ATCommands.ATSendSmsPDU + (pdu.Length - 2) / 2, General.ATCommands.ATEndPart));
                 //Add the PDU that will be sent (SMS data)
-                ModemCommandsList.Add(new Command(pdu, ATCommands.ATCommandCtrlZ.ToString()));
+                ATCommandsList.Add(new ATCommand(pdu, General.ATCommands.ATCommandCtrlZ.ToString()));
             }
         }
     }

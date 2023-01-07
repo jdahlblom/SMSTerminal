@@ -7,6 +7,9 @@ using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Modem
 {
+    /// <summary>
+    /// Handles modems, creates, adds, removes them.
+    /// </summary>
     public class ModemManager : IDisposable, IModemMessageListener
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -77,7 +80,7 @@ namespace SMSTerminal.Modem
 
                 foreach (var modem in _modems.Where(modem => modem.ModemId == e.ModemId))
                 {
-                    var result = await modem.ExecuteCommand(new ReadSMSCommand(modem, SMSReadStatus.Unread));
+                    var result = await modem.ExecuteCommand(new ATReadSMSCommand(modem, SMSReadStatus.Unread));
                     if (!result)
                     {
                         ModemEventManager.ModemEvent(this, modem.ModemId, "Failed to read new SMS.", ModemEventType.ReceiveData, "0", ModemResultEnum.Error);
@@ -134,7 +137,7 @@ namespace SMSTerminal.Modem
                     return false;
                 }
 
-                var pinCommand = new SetPINCommand(modem, gsmModemConfig.PIN1);
+                var pinCommand = new ATSetPINCommand(modem, gsmModemConfig.PIN1);
                 if (!await modem.ExecuteCommand(pinCommand))
                 {
                     Logger.Error($"Modem {modem.ModemId} could not set PIN. Modem not added to pool.");
@@ -147,14 +150,14 @@ namespace SMSTerminal.Modem
                     await Task.Delay(ModemTimings.WaitAfterSettingPIN);
                 }
 
-                if (!await modem.ExecuteCommand(new SetGSMPhase2Command(modem)))
+                if (!await modem.ExecuteCommand(new ATSetGSMPhase2Command(modem)))
                 {
                     Logger.Error($"Modem {modem.ModemId} could not set GSM Phase 2. Modem not added to pool.");
                     modem.Dispose();
                     return false;
                 }
 
-                if (!await modem.ExecuteCommand(new SetVerboseErrorsCommand(modem)))
+                if (!await modem.ExecuteCommand(new ATSetVerboseErrorsCommand(modem)))
                 {
                     Logger.Error($"Modem {modem.ModemId} could not set Verbose Errors. Modem not added to pool.");
                     modem.Dispose();
@@ -163,7 +166,7 @@ namespace SMSTerminal.Modem
 
                 _modems.Add(modem);
 
-                if (!await modem.ExecuteCommand(new ReadSMSCommand(modem, SMSReadStatus.Unread)))
+                if (!await modem.ExecuteCommand(new ATReadSMSCommand(modem, SMSReadStatus.Unread)))
                 {
                     Logger.Error($"Modem {modem.ModemId} failed to read new SMS.");
                 }
@@ -214,7 +217,7 @@ namespace SMSTerminal.Modem
         {
             foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
             {
-                return await _modems[0].ExecuteCommand(new GetNetworkStatusCommand(_modems[0]));
+                return await _modems[0].ExecuteCommand(new ATGetNetworkStatusCommand(_modems[0]));
             }
             return false;
         }

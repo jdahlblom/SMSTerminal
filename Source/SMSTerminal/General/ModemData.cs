@@ -9,7 +9,9 @@ namespace SMSTerminal.General
         NewSMSWaiting
     }
 
-
+    /// <summary>
+    /// Contains modem output.
+    /// </summary>
     internal class ModemData
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

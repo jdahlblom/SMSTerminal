@@ -3,27 +3,30 @@ using SMSTerminal.Interfaces;
 
 namespace SMSTerminal.Commands
 {
-    internal class SetPINCommand : CommandBase
+    /// <summary>
+    /// Handles PIN operations, checks status and applies PIN1 if necessary.
+    /// </summary>
+    internal class ATSetPINCommand : ATCommandBase
     {
         private string PIN1Code { get; }
         public bool PINCodeSet { get; private set; }
 
-        public SetPINCommand(IModem modem, string pinCode)
+        public ATSetPINCommand(IModem modem, string pinCode)
         {
             Modem = modem;
             PIN1Code = pinCode;
             CommandType = "[Set PIN Command]";
-            var command = new Command(ATCommands.ATPINStatusQueryCommand, ATCommands.ATEndPart);
-            var command2 = new Command(ATCommands.ATPINAuthCommand + PIN1Code, ATCommands.ATEndPart);
-            ModemCommandsList.Add(command);
-            ModemCommandsList.Add(command2);
+            var command = new ATCommand(General.ATCommands.ATPINStatusQueryCommand, General.ATCommands.ATEndPart);
+            var command2 = new ATCommand(General.ATCommands.ATPINAuthCommand + PIN1Code, General.ATCommands.ATEndPart);
+            ATCommandsList.Add(command);
+            ATCommandsList.Add(command2);
         }
 
         public override CommandProgress Process(ModemData modemData)
         {
             try
             {
-                if (!modemData.Data.Contains(ModemCommandsList[CommandIndex].CommandString))
+                if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;
                 }

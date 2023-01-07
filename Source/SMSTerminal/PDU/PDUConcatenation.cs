@@ -11,6 +11,8 @@ namespace SMSTerminal.PDU
         /// <summary>
         /// All SMS will go through here regardless of SMS or CSMS.
         /// Sort messages into complete SMS and fragmented CSMS.
+        /// Fragmented CSMS are parts of a concatenated SMS where
+        /// all parts have not yet arrived.
         /// </summary>
         public void SortMessages(List<PDUMessage> pduModemMessages,
             ref List<PDUMessage> completeMessages,
@@ -42,7 +44,9 @@ namespace SMSTerminal.PDU
         }
 
         /// <summary>
-        /// Neither list can contain single SMS
+        /// Neither list can contain single SMS.
+        /// Concatenates CSMS and those that can't be concatenated are
+        /// added to fragmentCSMSMessages.
         /// </summary>
         private void SortCSMS(List<PDUMessage> pduModemMessages,
             ref List<PDUMessage> completeMessages,
