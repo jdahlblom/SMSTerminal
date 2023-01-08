@@ -6,7 +6,8 @@ namespace SMSTerminal.General
     public enum ModemDataClassEnum
     {
         None,
-        NewSMSWaiting
+        NewSMSWaiting,
+        UnknownModemData
     }
 
     /// <summary>

@@ -29,10 +29,10 @@ namespace SMSTerminal.Modem
         /// </summary>
         /// <param name="modemOutput"></param>
         /// <returns>True if all modemOutput was complete</returns>
-        public async Task<bool> ParseModemOutput(string modemOutput)
+        public async Task<string> ParseModemOutput(string modemOutput)
         {
             /*
-             * Getting different results from modem, e.g. \r\nOK or \rOK
+             * Getting different results from modem, => \r\nOK or \rOK
              */
             modemOutput = modemOutput.Replace('\n', '\r');
 
@@ -53,6 +53,14 @@ namespace SMSTerminal.Modem
                 outputBuffer.Append(line);
                 if (outputBuffer.ToString().ContainsOutputEndMarker())
                 {
+                    /*
+                     * We have found the end of the modem output ("message"), separate this and process it
+                     * further. Remove the corresponding string ("message") from the modemOutput as
+                     * processed messages shouldn't be returned. modemOutput can contain incomplete (still incoming)
+                     * modem output that will be processed later on.
+                     */
+                    modemOutput = modemOutput[(outputBuffer.ToString().Length - 1)..];
+
                     Logger.Debug($"Read this from modem:\n\n->{modemOutput}<-");
                     ModemData modemData = null;
                     try
@@ -72,14 +80,13 @@ namespace SMSTerminal.Modem
                     {
                         var message = modemData == null ? "" : modemData.ToString();
                         Logger.Error("Failed creating ModemData.\n{0}\n\n{1}", message, exception);
-                        return false;
                     }
 
                     outputBuffer.Clear();
                 }
             }
 
-            return string.IsNullOrEmpty(outputBuffer.ToString().RemoveAtLineEndings());
+            return modemOutput;
         }
     }
 }

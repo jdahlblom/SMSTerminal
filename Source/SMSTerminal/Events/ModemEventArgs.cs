@@ -32,7 +32,8 @@
         Critical,
         IOError,
         TimeOutError,
-        ParseFail
+        ParseFail,
+        UnknownModemData
     }
 
     public class ModemEventArgs : EventArgs

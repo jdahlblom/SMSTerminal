@@ -70,14 +70,19 @@ namespace SMSWindow
                 var message = $"-------------------------------------\nPort {e.ModemId}\n  Status {e.ResultStatus}\n  EventType {e.EventType}\n  Data :\n ->\n{e.Message}\n<-";
                 if (e.ResultStatus.ContainsError())
                 {
-                    Dispatcher?.BeginInvoke((Action)(() => TextBoxErrors.Text = TextBoxErrors.Text + Environment.NewLine + message));
+                    if (e.ResultStatus == ModemResultEnum.UnknownModemData)
+                    {
+                        Dispatcher?.BeginInvoke((Action)(() => TextBoxUnknownModemData.Text += Environment.NewLine + message));
+                    }
+                    else
+                    {
+                        Dispatcher?.BeginInvoke((Action)(() => TextBoxErrors.Text += Environment.NewLine + message));
+                    }
                 }
                 else
                 {
-                    Dispatcher?.BeginInvoke((Action)(() => TextBoxModemLog.Text = TextBoxModemLog.Text + Environment.NewLine + message));
+                    Dispatcher?.BeginInvoke((Action)(() => TextBoxModemLog.Text += Environment.NewLine + message));
                 }
-                //Dispatcher?.BeginInvoke((Action)(() => TextBoxStats.Text = _pduModem.GetSMSStats));
-                //Dispatcher?.BeginInvoke((Action)(() => TextBoxSignals.Text += _pduModem.GetSignalStates()));
             }
             catch (Exception exception)
             {
@@ -115,6 +120,7 @@ namespace SMSWindow
             ButtonClearErrors.IsEnabled = !string.IsNullOrEmpty(TextBoxErrors.Text);
             ButtonClearInSMS.IsEnabled = !string.IsNullOrEmpty(TextBoxIncomingSMS.Text);
             ButtonClearModemLog.IsEnabled = !string.IsNullOrEmpty(TextBoxModemLog.Text);
+            ButtonClearUnknown.IsEnabled = !string.IsNullOrEmpty(TextBoxUnknownModemData.Text);
             //ButtonClear.IsEnabled = !string.IsNullOrEmpty(TextBox.Text);
         }
 
@@ -206,7 +212,7 @@ namespace SMSWindow
                 var startText = "";
                 var endText = "";
                 Enum.TryParse(ComboBoxEncoding.SelectedItem.ToString(), out SMSEncoding smsEncoding);
-                
+
                 var length = int.Parse(ComboBoxLongSMS.SelectedValue.ToString());
                 if (smsEncoding == SMSEncoding._UCS2)
                 {
@@ -237,7 +243,7 @@ namespace SMSWindow
                         }
                     }
                 }
-                
+
                 TextBoxSMSText.Text += endText;
             }
             catch (Exception exception)
@@ -293,7 +299,7 @@ namespace SMSWindow
             TextBoxErrors.Clear();
             SetFormState();
         }
-        
+
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {
             try
@@ -352,7 +358,7 @@ namespace SMSWindow
                 ShowErrorMessageBox(exception);
             }
         }
-        
+
         private void ButtonErrorCommand_OnClick(object sender, RoutedEventArgs e)
         {
             try
@@ -398,7 +404,7 @@ namespace SMSWindow
                 {
                     MessageBox.Show(this, $"Failed to restart. Either modem not found or error occurred while restarting. {(string)ComboBoxModem.SelectedValue}", "Error", MessageBoxButton.OK);
                 }
-                
+
                 RefreshModems();
                 SetFormState();
             }
@@ -406,6 +412,11 @@ namespace SMSWindow
             {
                 ShowErrorMessageBox(exception);
             }
+        }
+
+        private void ButtonClearUnknown_OnClick(object sender, RoutedEventArgs e)
+        {
+            TextBoxUnknownModemData.Text = "";
         }
     }
 }

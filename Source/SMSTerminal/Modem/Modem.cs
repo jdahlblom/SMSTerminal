@@ -64,10 +64,7 @@ internal class Modem : IDisposable, IModem
 
     public ISerialReceiver SerialReceiver
     {
-        set
-        {
-            _serialReceiver = value;
-        }
+        set => _serialReceiver = value;
     }
 
     public SerialPort SerialPort => _serialPort;
@@ -171,6 +168,7 @@ internal class Modem : IDisposable, IModem
                             var cts2 = new CancellationTokenSource(ModemTimings.ChannelReadWait);
                             //Todo, how should this be processed?
                             await _unknownModemDataChannel.Writer.WriteAsync(modemData, cts2.Token);
+                            ModemEventManager.ModemEvent(this, ModemId, modemData.Data, ModemEventType.ModemComms, ModemId, ModemResultEnum.UnknownModemData);
                             break;
                         }
                     case CommandProgress.Error:

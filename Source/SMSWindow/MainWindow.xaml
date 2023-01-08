@@ -60,8 +60,10 @@
             <Label Content="Incoming SMS" HorizontalAlignment="Left"></Label>
         </DockPanel>
         <DockPanel Grid.Row="1" Grid.Column="2" Grid.RowSpan="3">
-            <DockPanel>
-                <TextBox Name="TextBoxIncomingSMS" VerticalScrollBarVisibility="Visible"  DockPanel.Dock="Top" TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
+            <TextBox Name="TextBoxIncomingSMS" Height="400" VerticalScrollBarVisibility="Visible"  DockPanel.Dock="Top" TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
+            <DockPanel DockPanel.Dock="Bottom">
+                <Label Content="Unknown Modem Output" DockPanel.Dock="Top"></Label>
+                <TextBox Name="TextBoxUnknownModemData" DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Visible"  TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
             </DockPanel>
         </DockPanel>
         <StackPanel Grid.Row="3" Grid.RowSpan="3" Grid.Column="0" Orientation="Vertical" HorizontalAlignment="Stretch">
@@ -117,6 +119,7 @@
 
         <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Name="ButtonClearInSMS" Content="Clear SMS" Height="22" Margin="0,5,10,5" Click="ButtonClearIncomingSMS_OnClick"/>
+            <Button Name="ButtonClearUnknown" Content="Clear SMS" Height="22" Margin="0,5,10,5" Click="ButtonClearUnknown_OnClick"/>
         </StackPanel>
         <StackPanel Grid.Row="5" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Name="ButtonClose" Content="Close" Height="22" Margin="0,5,10,5" Click="ButtonClose_OnClick" />

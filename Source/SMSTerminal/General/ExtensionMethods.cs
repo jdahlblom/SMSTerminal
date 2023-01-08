@@ -9,7 +9,7 @@ namespace SMSTerminal.General
 {
     public static class ExtensionMethods
     {
-        
+
 
         public static bool ContainsError(this ModemResultEnum modemResultEnum)
         {
@@ -22,17 +22,18 @@ namespace SMSTerminal.General
                 case ModemResultEnum.Critical:
                 case ModemResultEnum.IOError:
                 case ModemResultEnum.TimeOutError:
+                case ModemResultEnum.UnknownModemData:
                     return true;
                 case ModemResultEnum.None:
                 case ModemResultEnum.Ok:
                     return false;
                 default:
-                {
-                    throw new Exception($"ModemResultEnum : {modemResultEnum} isn't implemented.");
-                }
+                    {
+                        throw new Exception($"ModemResultEnum : {modemResultEnum} isn't implemented.");
+                    }
             }
         }
-        
+
 
         public static bool IsInt(this string s)
         {
@@ -87,10 +88,10 @@ namespace SMSTerminal.General
             }
             return true;
         }
-        
+
         public static bool ContainsOutputEndMarker(this string message)
         {
-            if(string.IsNullOrEmpty(message)) return false;
+            if (string.IsNullOrEmpty(message)) return false;
 
             return message.Contains(ATMarkers.NewSMSArrivedSM) ||
                    message.Contains(ATMarkers.NewSMSArrivedMT) ||
@@ -258,7 +259,7 @@ namespace SMSTerminal.General
             }
             throw new Exception("SmsDirection error. SmsDirection Enum in smsList has value not recognized?");
         }
-        
+
         public static string ElementsToString(this IEnumerable<PDUInformationElement> pduInformationElementList)
         {
             var result = new StringBuilder();

@@ -45,10 +45,11 @@ namespace SMSTerminal.Modem
                             var cts = new CancellationTokenSource(ModemTimings.MS1000);
                             var bytesRead = await SerialPort.BaseStream.ReadAsync(byteArray, 0, byteArray.Length, cts.Token);
                             _incomingData.Append(Common.UsedEncoding.GetString(byteArray, 0, bytesRead));
-                            if (await _messageParser.ParseModemOutput(_incomingData.ToString()))
+                            var outputData = await _messageParser.ParseModemOutput(_incomingData.ToString());
+                            if (!string.IsNullOrEmpty(outputData) && outputData.Length != _incomingData.Length)
                             {
-                                //All data was processed into ModemData so clear our buffer.
                                 _incomingData.Clear();
+                                _incomingData.Append(outputData);
                             }
                         }
                         catch (TimeoutException t)

@@ -2,6 +2,6 @@
 {
     public interface IOutputParser
     {
-        public Task<bool> ParseModemOutput(string modemOutput);
+        public Task<string> ParseModemOutput(string modemOutput);
     }
 }
