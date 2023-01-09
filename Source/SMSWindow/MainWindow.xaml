@@ -62,7 +62,7 @@
         <DockPanel Grid.Row="1" Grid.Column="2" Grid.RowSpan="3">
             <TextBox Name="TextBoxIncomingSMS" Height="400" VerticalScrollBarVisibility="Visible"  DockPanel.Dock="Top" TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
             <DockPanel DockPanel.Dock="Bottom">
-                <Label Content="Unknown Modem Output" DockPanel.Dock="Top"></Label>
+                <Label Content="Unknown Modem Output" DockPanel.Dock="Top" ToolTip="Should be empty, anything outputparser doesn't recognize ends up here."></Label>
                 <TextBox Name="TextBoxUnknownModemData" DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Visible"  TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
             </DockPanel>
         </DockPanel>

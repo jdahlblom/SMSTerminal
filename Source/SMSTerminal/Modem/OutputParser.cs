@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using NLog;
 using SMSTerminal.Events;
@@ -31,13 +32,18 @@ namespace SMSTerminal.Modem
         /// <returns>True if all modemOutput was complete</returns>
         public async Task<string> ParseModemOutput(string modemOutput)
         {
+            if (string.IsNullOrEmpty(modemOutput))
+            {
+                return "";
+            }
+
             /*
              * Getting different results from modem, => \r\nOK or \rOK
              */
             modemOutput = modemOutput.Replace('\n', '\r');
 
             /*
-             Modem sometimes outputting several information parts in one go.
+             Modem sometimes outputting several information parts (messages) in one go.
              Here [Send SMS Report] (CMGS) and new SMS in memory indicator (CMTI) :
 
                 <PDU>
@@ -59,9 +65,8 @@ namespace SMSTerminal.Modem
                      * processed messages shouldn't be returned. modemOutput can contain incomplete (still incoming)
                      * modem output that will be processed later on.
                      */
-                    modemOutput = modemOutput[(outputBuffer.ToString().Length - 1)..];
-
-                    Logger.Debug($"Read this from modem:\n\n->{modemOutput}<-");
+                    Logger.Debug($"Read this from modem:\n\n->{outputBuffer}<-");
+                    modemOutput = modemOutput[outputBuffer.Length..];
                     ModemData modemData = null;
                     try
                     {
@@ -86,7 +91,7 @@ namespace SMSTerminal.Modem
                 }
             }
 
-            return modemOutput;
+            return modemOutput.Trim().RemoveAtLineEndings().Length == 0 ? "" : modemOutput;
         }
     }
 }

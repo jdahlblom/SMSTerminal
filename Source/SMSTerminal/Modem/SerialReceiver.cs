@@ -46,8 +46,12 @@ namespace SMSTerminal.Modem
                             var bytesRead = await SerialPort.BaseStream.ReadAsync(byteArray, 0, byteArray.Length, cts.Token);
                             _incomingData.Append(Common.UsedEncoding.GetString(byteArray, 0, bytesRead));
                             var outputData = await _messageParser.ParseModemOutput(_incomingData.ToString());
-                            if (!string.IsNullOrEmpty(outputData) && outputData.Length != _incomingData.Length)
+                            if (outputData.Length != _incomingData.Length)
                             {
+                                /*
+                                 * Output parser has removed and processed a complete message from _incomingData.
+                                 * The remaining part we set as our buffer as it may be a incomplete message.
+                                 */
                                 _incomingData.Clear();
                                 _incomingData.Append(outputData);
                             }
