@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using System.Diagnostics;
+using System.IO.Ports;
 using System.Text;
 using NLog;
 using SMSTerminal.Events;
@@ -44,8 +45,10 @@ namespace SMSTerminal.Modem
                             var byteArray = new byte[SerialPort.BytesToRead];
                             var cts = new CancellationTokenSource(ModemTimings.MS1000);
                             var bytesRead = await SerialPort.BaseStream.ReadAsync(byteArray, 0, byteArray.Length, cts.Token);
+
                             _incomingData.Append(Common.UsedEncoding.GetString(byteArray, 0, bytesRead));
                             var outputData = await _messageParser.ParseModemOutput(_incomingData.ToString());
+                            
                             if (outputData.Length != _incomingData.Length)
                             {
                                 /*

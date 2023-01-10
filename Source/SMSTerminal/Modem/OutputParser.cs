@@ -12,7 +12,9 @@ namespace SMSTerminal.Modem
     /// Parses modem output, checks for (end of message) markers and creates
     /// ModemData when marker found. The rest of the message if not complete will be
     /// left as is by calling class until it too is complete.
-    /// Modem outputs in bursts and can contain several not related messages where last
+    /// Modem outputs in bursts and can contain
+    /// a) incomplete message
+    /// b) several not related messages where last
     /// message can be complete or incomplete.
     /// </summary>
     internal class OutputParser : IOutputParser
