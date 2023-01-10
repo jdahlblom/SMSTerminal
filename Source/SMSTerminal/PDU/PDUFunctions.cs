@@ -59,7 +59,7 @@ public enum TpStatus
     /* Values specific to each SC: 0x70 - 0x7f */
     /* Reserved: 0x80 - 0xff */
     TP_STATUS_NONE = 0xFF
-};
+}
 
 public static class PDUFunctions
 {
@@ -217,7 +217,7 @@ public static class PDUFunctions
     {
         switch (tpStatus)
         {
-            /* SMS received sucessfully */
+            /* SMS received successfully */
             case TpStatus.TP_STATUS_RECEIVED_OK:
             {
                 return "Message received OK.";

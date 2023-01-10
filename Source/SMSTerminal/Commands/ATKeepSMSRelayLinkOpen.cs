@@ -4,15 +4,15 @@ using SMSTerminal.Interfaces;
 namespace SMSTerminal.Commands;
 
 /// <summary>
-/// Restarts the modem.
+/// This speeds up SMS execution.
 /// </summary>
-internal class ATRestartModemCommand : ATCommandBase
+internal class ATKeepSMSRelayLinkOpen : ATCommandBase
 {
-    public ATRestartModemCommand(IModem modem)
+    public ATKeepSMSRelayLinkOpen(IModem modem)
     {
         Modem = modem;
-        CommandType = "[AT Restart Modem Command]";
-        var command = new ATCommand(ATCommands.ATRestartModem, ATCommands.ATEndPart);
+        CommandType = "[AT SMS Relay Link Command]";
+        var command = new ATCommand(ATCommands.ATKeepSMSRelayLinkOpen, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

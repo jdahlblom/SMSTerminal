@@ -26,7 +26,7 @@ internal class Modem : IDisposable, IModem
     internal Channel<ModemData> ModemDataChannel { get; } = Channel.CreateUnbounded<ModemData>();
     private readonly Channel<ModemData> _unknownModemDataChannel = Channel.CreateUnbounded<ModemData>();
     private ISerialReceiver _serialReceiver;
-    public Signals Signals { get; } = new Signals();
+    public Signals Signals { get; } = new();
 
     public Modem(GsmModemConfig gsmModemConfig)
     {
@@ -185,6 +185,7 @@ internal class Modem : IDisposable, IModem
         }
         catch (Exception e)
         {
+            ModemEventManager.ModemEvent(this, ModemId, $"Failed to execute {command.CommandType} : {e.Message}", ModemEventType.ModemComms, ModemId, ModemResultEnum.Error);
             Logger.Error(e);
             return false;
         }
@@ -246,6 +247,11 @@ internal class Modem : IDisposable, IModem
                    Signals.IsActive(SignalType.ReadingSMS, $"{ModemId} .SendSMS Start"))
             {
                 await Task.Delay(ModemTimings.MS300);
+            }
+            
+            if (outgoingSms.ByteLength() > 160 && !await ExecuteCommand(new ATKeepSMSRelayLinkOpen(this)))
+            {
+                Logger.Error("Failed to set Keep SMS Relay Channel Open before sending SMS.");
             }
             Signals.SetStarted(SignalType.SendingSMS);
             var command = new ATSendSMSCommand(this, outgoingSms);
