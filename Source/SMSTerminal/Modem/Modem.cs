@@ -244,7 +244,7 @@ internal class Modem : IDisposable, IModem
         try
         {
             while (Signals.IsActive(SignalType.SendingSMS, $"{ModemId}.SendSMS Start") ||
-                   Signals.IsActive(SignalType.ReadingSMS, $"{ModemId} .SendSMS Start"))
+                   Signals.IsActive(SignalType.ReadingSMS, $"{ModemId}.SendSMS Start"))
             {
                 await Task.Delay(ModemTimings.MS300);
             }
