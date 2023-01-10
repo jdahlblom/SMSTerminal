@@ -20,7 +20,7 @@ namespace SMSTerminal.Commands
             FillCommandList();
         }
 
-        public override CommandProgress Process(ModemData modemData)
+        public override async Task<CommandProgress> Process(ModemData modemData)
         {
             try
             {
@@ -29,14 +29,15 @@ namespace SMSTerminal.Commands
                     return CommandProgress.NotExpectedDataReply;
                 }
                 SetModemDataForCurrentCommand(modemData);
-
-                Thread.Sleep(ModemTimings.MS200);
-
+                
                 if (modemData.HasError)
                 {
                     SendResultEvent();
                     return CommandProgress.Error;
                 }
+                
+                //Give modem some breathing space. SMS is slow communication.
+                await Task.Delay(ModemTimings.MS500);
 
                 //mod = 0 means it contains the AT command
                 if (CommandIndex % 2 == 0 && modemData.Data.Contains(ATMarkers.ReadyPrompt))
@@ -83,9 +84,9 @@ namespace SMSTerminal.Commands
             foreach (var pdu in pduArray)
             {
                 //Add AT command to prepare modem for SMS data
-                ATCommandsList.Add(new ATCommand(General.ATCommands.ATSendSmsPDU + (pdu.Length - 2) / 2, General.ATCommands.ATEndPart));
+                ATCommandsList.Add(new ATCommand(ATCommands.ATSendSmsPDU + (pdu.Length - 2) / 2, ATCommands.ATEndPart));
                 //Add the PDU that will be sent (SMS data)
-                ATCommandsList.Add(new ATCommand(pdu, General.ATCommands.ATCommandCtrlZ.ToString()));
+                ATCommandsList.Add(new ATCommand(pdu, ATCommands.ATCommandCtrlZ.ToString()));
             }
         }
     }

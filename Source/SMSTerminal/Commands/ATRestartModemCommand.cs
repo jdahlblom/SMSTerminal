@@ -12,14 +12,17 @@ namespace SMSTerminal.Commands
         {
             Modem = modem;
             CommandType = "[AT Restart Modem Command]";
-            var command = new ATCommand(General.ATCommands.ATRestartModem, General.ATCommands.ATEndPart);
+            var command = new ATCommand(ATCommands.ATRestartModem, ATCommands.ATEndPart);
             ATCommandsList.Add(command);
         }
 
-        public override CommandProgress Process(ModemData modemData)
+        public override async Task<CommandProgress> Process(ModemData modemData)
         {
             try
             {
+                //Give modem some breathing space. SMS is slow communication.
+                await Task.Delay(ModemTimings.MS100);
+
                 if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;

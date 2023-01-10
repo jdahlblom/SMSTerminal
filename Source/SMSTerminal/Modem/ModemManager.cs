@@ -10,7 +10,7 @@ namespace SMSTerminal.Modem
     /// <summary>
     /// Handles modems, creates, adds, removes them.
     /// </summary>
-    public class ModemManager : IDisposable, IModemMessageListener
+    public class ModemManager : IDisposable, IModemInternalListener
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly List<IModem> _modems = new();
@@ -72,7 +72,7 @@ namespace SMSTerminal.Modem
             }
         }
 
-        public async void ModemMessageEvent(object sender, ModemMessageEventArgs e)
+        public async void ModemInternalEvent(object sender, ModemInternalEventArgs e)
         {
             try
             {

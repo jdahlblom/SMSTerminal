@@ -34,15 +34,15 @@ namespace SMSTerminal.Events
         }
         
         /*********************************************************************************************************************/
-        internal delegate void ModemMessageEventHandler(object sender, ModemMessageEventArgs e);
-        internal static event ModemMessageEventHandler OnModemMessageEvent;
+        internal delegate void ModemInternalEventHandler(object sender, ModemInternalEventArgs e);
+        internal static event ModemInternalEventHandler OnModemInternalEvent;
 
         /// <summary>
         /// Internal use for sending events about data from modem
         /// </summary>
-        internal static void ModemMessageEvent(object sender, string modemId, ModemResultEnum modemResultEnum, ModemDataClassEnum modemDataClass, string data)
+        internal static void ModemInternalEvent(object sender, string modemId, ModemResultEnum modemResultEnum, ModemDataClassEnum modemDataClass, string data)
         {
-            OnModemMessageEvent?.Invoke(sender, new ModemMessageEventArgs { 
+            OnModemInternalEvent?.Invoke(sender, new ModemInternalEventArgs { 
                 ModemId = modemId,
                 ModemResult = modemResultEnum,
                 ModemMessageClass = modemDataClass,
@@ -50,14 +50,14 @@ namespace SMSTerminal.Events
             });
         }
 
-        internal static void AttachModemMessageListener(IModemMessageListener modemMessageListener)
+        internal static void AttachModemMessageListener(IModemInternalListener modemMessageListener)
         {
-            OnModemMessageEvent += modemMessageListener.ModemMessageEvent;
+            OnModemInternalEvent += modemMessageListener.ModemInternalEvent;
         }
 
-        internal static void DetachModemMessageListener(IModemMessageListener modemMessageListener)
+        internal static void DetachModemMessageListener(IModemInternalListener modemMessageListener)
         {
-            OnModemMessageEvent -= modemMessageListener.ModemMessageEvent;
+            OnModemInternalEvent -= modemMessageListener.ModemInternalEvent;
         }
 
         /*********************************************************************************************************************/
@@ -85,4 +85,5 @@ namespace SMSTerminal.Events
             OnNewSMSEvent -= newSMSListener.NewSMSEvent;
         }
     }
+    
 }

@@ -16,16 +16,19 @@ namespace SMSTerminal.Commands
             Modem = modem;
             PIN1Code = pinCode;
             CommandType = "[Set PIN Command]";
-            var command = new ATCommand(General.ATCommands.ATPINStatusQueryCommand, General.ATCommands.ATEndPart);
-            var command2 = new ATCommand(General.ATCommands.ATPINAuthCommand + PIN1Code, General.ATCommands.ATEndPart);
+            var command = new ATCommand(ATCommands.ATPINStatusQueryCommand, ATCommands.ATEndPart);
+            var command2 = new ATCommand(ATCommands.ATPINAuthCommand + PIN1Code, ATCommands.ATEndPart);
             ATCommandsList.Add(command);
             ATCommandsList.Add(command2);
         }
 
-        public override CommandProgress Process(ModemData modemData)
+        public override async Task<CommandProgress> Process(ModemData modemData)
         {
             try
             {
+                //Give modem some breathing space. SMS is slow communication.
+                await Task.Delay(ModemTimings.MS100);
+
                 if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;

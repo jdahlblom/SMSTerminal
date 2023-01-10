@@ -1,11 +1,13 @@
 ﻿using System.IO.Ports;
-using System.Threading.Channels;
 using SMSTerminal.Commands;
 using SMSTerminal.General;
 using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Interfaces
 {
+    /// <summary>
+    /// Modem interface. Contains minimum methods and members needed.
+    /// </summary>
     internal interface IModem
     {
         string ModemId { get; }
@@ -17,7 +19,6 @@ namespace SMSTerminal.Interfaces
         SerialPort SerialPort { get; }
         Task<bool> ExecuteCommand(ICommand command);
         Task<bool> WriteTextData(string text);
-        Channel<ModemData> ModemDataChannel { get; }
         GsmModemConfig GsmModemConfig { get; }
         ISerialReceiver SerialReceiver { set; }
         Task<bool> SendSMS(OutgoingSms outgoingSms);

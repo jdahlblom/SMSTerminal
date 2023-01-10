@@ -3,6 +3,9 @@ using SMSTerminal.PDU;
 
 namespace SMSTerminal.Interfaces
 {
+    /// <summary>
+    /// Interface for outgoing and incoming SMS.
+    /// </summary>
     public interface IShortMessageService
     {
         string MessageId { get; set; }

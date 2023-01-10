@@ -3,6 +3,11 @@ using NLog;
 
 namespace SMSTerminal.PDU
 {
+    /// <summary>
+    /// Parses lists of SMS, single SMS separated from CSMS.
+    /// CSMS are concatenated if possible, if not the fragments
+    /// are stored for later use if the rest of the CSMS arrives.
+    /// </summary>
     internal class PDUConcatenation
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

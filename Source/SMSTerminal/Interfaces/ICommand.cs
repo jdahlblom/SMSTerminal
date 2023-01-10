@@ -4,6 +4,9 @@ using SMSTerminal.General;
 
 namespace SMSTerminal.Interfaces
 {
+    /// <summary>
+    /// Interface for commands that can be executed by a IModem.
+    /// </summary>
     internal enum CommandProgress
     {
         /// <summary>
@@ -21,10 +24,20 @@ namespace SMSTerminal.Interfaces
         /// <summary>
         /// Output friendly string describing the command.
         /// </summary>
-        string CommandType { get; }
-        void SetModem(IModem modem);
-        List<ATCommand> ATCommands { get; }
+        string CommandType { get; }        
+        
+        /// <summary>
+        /// Retrieves AT command command index is pointing at.
+        /// Calling NextATCommand will increase command index.
+        /// </summary>
         ATCommand CurrentATCommand { get; }
+
+        /// <summary>
+        /// Once this has been called also CurrentATCommand
+        /// will point to the same ATCommand. Internal Command Index is
+        /// increased by 1.
+        /// </summary>
+        /// <returns>next AT command</returns>
         ATCommand NextATCommand();
 
         /// <summary>
@@ -39,6 +52,6 @@ namespace SMSTerminal.Interfaces
         /// </summary>
         /// <param name="modemData"></param>
         /// <returns></returns>
-        CommandProgress Process(ModemData modemData);
+        Task<CommandProgress> Process(ModemData modemData);
     }
 }

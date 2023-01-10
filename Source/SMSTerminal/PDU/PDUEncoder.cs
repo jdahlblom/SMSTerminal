@@ -6,6 +6,9 @@ using SMSTerminal.General;
 //
 namespace SMSTerminal.PDU
 {
+    /// <summary>
+    /// Encodes outgoing message into PDU using chosen SMS encoding.
+    /// </summary>
     public class PDUEncoder
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

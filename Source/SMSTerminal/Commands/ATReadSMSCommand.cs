@@ -25,15 +25,18 @@ namespace SMSTerminal.Commands
             Modem = modem;
             CommandType = $"[Read [{smsReadStatus}] SMS Command]";
             _commandString = smsReadStatus == SMSReadStatus.Read
-                ? General.ATCommands.ATReadReadSms
-                : General.ATCommands.ATReadUnreadSms;
-            ATCommandsList.Add(new ATCommand(_commandString, General.ATCommands.ATEndPart));
+                ? ATCommands.ATReadReadSms
+                : ATCommands.ATReadUnreadSms;
+            ATCommandsList.Add(new ATCommand(_commandString, ATCommands.ATEndPart));
         }
 
-        public override CommandProgress Process(ModemData modemData)
+        public override async Task<CommandProgress> Process(ModemData modemData)
         {
             try
             {
+                //Give modem some breathing space. SMS is slow communication.
+                await Task.Delay(ModemTimings.MS200);
+
                 if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;
@@ -64,7 +67,7 @@ namespace SMSTerminal.Commands
                         if (!Modem.GsmModemConfig.DeleteSMSFromModemWhenRead) break;
                         foreach (var i in modemMessage.MemorySlots)
                         {
-                            ATCommandsList.Add(new ATCommand(General.ATCommands.ATDeleteSmsAtMemorySlot + i, General.ATCommands.ATEndPart, i));
+                            ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i));
                         }
                     }
 
@@ -78,14 +81,14 @@ namespace SMSTerminal.Commands
                         if (fragmentCSMSMessage.DeletedFromTA) continue;
                         foreach (var i in fragmentCSMSMessage.MemorySlots)
                         {
-                            ATCommandsList.Add(new ATCommand(General.ATCommands.ATDeleteSmsAtMemorySlot + i, General.ATCommands.ATEndPart, i, "Fragment"));
+                            ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i, "Fragment"));
                             //fragmentCSMSMessage.DeletedFromTA = true;
                         }
                     }
 
                     return CommandProgress.NextCommand; //Start doing the delete commands
                 }
-                else if (modemData.Data.Contains(General.ATCommands.ATDeleteSmsAtMemorySlot))
+                else if (modemData.Data.Contains(ATCommands.ATDeleteSmsAtMemorySlot))
                 {
                     /*
                      * A SMS that belongs to a CSMS but hasn't yet been assembled because all parts haven't yet arrived.

@@ -3,6 +3,9 @@ using SMSTerminal.General;
 
 namespace SMSTerminal.PDU
 {
+    /// <summary>
+    /// Decodes PDU into readable format depending on the SMS encoding and User Data Header used.
+    /// </summary>
     public class PDUDecoder
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

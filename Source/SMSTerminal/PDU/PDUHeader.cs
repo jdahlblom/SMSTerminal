@@ -25,7 +25,10 @@
         Absolute = 0x18
     }
 
-    public class PDUHeader //AKA First Octet
+    /// <summary>
+    /// AKA First Octet
+    /// </summary>
+    public class PDUHeader
     {
         /*
          * INCOMING MESSAGE:

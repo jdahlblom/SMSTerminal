@@ -11,14 +11,6 @@ namespace SMSTerminal.Commands
         public string CommandType { get; protected init; }
         protected readonly List<ATCommand> ATCommandsList = new();
         protected IModem Modem { get; set; }
-        public void SetModem(IModem modem)
-        {
-            Modem = modem;
-        }
-        /// <summary>
-        /// List of AT commands associated to this Command.
-        /// </summary>
-        public List<ATCommand> ATCommands => ATCommandsList;
         public ATCommand CurrentATCommand => ATCommandsList[CommandIndex];
         protected bool HasNextATCommand => ATCommandsList.Count - 1 > CommandIndex;
 
@@ -46,7 +38,7 @@ namespace SMSTerminal.Commands
         /// </summary>
         /// <param name="modemData"></param>
         /// <returns></returns>
-        public abstract CommandProgress Process(ModemData modemData);
+        public abstract Task<CommandProgress> Process(ModemData modemData);
 
         protected int CommandIndex = 0;
         

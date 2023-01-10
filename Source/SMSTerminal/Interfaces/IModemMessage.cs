@@ -2,6 +2,10 @@
 
 namespace SMSTerminal.Interfaces;
 
+
+/// <summary>
+/// Interface for the modem SMS message.
+/// </summary>
 public interface IModemMessage
 {
     string Message { get; }

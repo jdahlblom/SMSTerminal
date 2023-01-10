@@ -18,16 +18,19 @@ namespace SMSTerminal.Commands
         {
             Modem = modem;
             CommandType = "[Get Modem Information Command]";
-            ATCommandsList.Add(new ATCommand(General.ATCommands.ATGetModemManufacturerCommand,General.ATCommands.ATEndPart));
-            ATCommandsList.Add(new ATCommand(General.ATCommands.ATGetModemModelCommand, General.ATCommands.ATEndPart));
-            ATCommandsList.Add(new ATCommand(General.ATCommands.ATGetIMSICommand, General.ATCommands.ATEndPart));
-            ATCommandsList.Add(new ATCommand(General.ATCommands.ATGetICCIDCommand, General.ATCommands.ATEndPart));
+            ATCommandsList.Add(new ATCommand(ATCommands.ATGetModemManufacturerCommand,ATCommands.ATEndPart));
+            ATCommandsList.Add(new ATCommand(ATCommands.ATGetModemModelCommand, ATCommands.ATEndPart));
+            ATCommandsList.Add(new ATCommand(ATCommands.ATGetIMSICommand, ATCommands.ATEndPart));
+            ATCommandsList.Add(new ATCommand(ATCommands.ATGetICCIDCommand, ATCommands.ATEndPart));
         }
 
-        public override CommandProgress Process(ModemData modemData)
+        public override async Task<CommandProgress> Process(ModemData modemData)
         {
             try
             {
+                //Give modem some breathing space. SMS is slow communication.
+                await Task.Delay(ModemTimings.MS100);
+
                 if (!modemData.Data.Contains(ATCommandsList[CommandIndex].ATCommandString))
                 {
                     return CommandProgress.NotExpectedDataReply;

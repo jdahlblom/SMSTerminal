@@ -23,7 +23,7 @@ internal class Modem : IDisposable, IModem
     public string ModemId => _gsmModemConfig.ModemId;
     private readonly SerialPort _serialPort;
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    public Channel<ModemData> ModemDataChannel { get; } = Channel.CreateUnbounded<ModemData>();
+    internal Channel<ModemData> ModemDataChannel { get; } = Channel.CreateUnbounded<ModemData>();
     private readonly Channel<ModemData> _unknownModemDataChannel = Channel.CreateUnbounded<ModemData>();
     private ISerialReceiver _serialReceiver;
     public Signals Signals { get; } = new Signals();
@@ -151,7 +151,7 @@ internal class Modem : IDisposable, IModem
                 var cts = new CancellationTokenSource(ModemTimings.ModemReplyWait);
                 var modemData = await ModemDataChannel.Reader.ReadAsync(cts.Token);
                 Logger.Debug($"Modem sees => ****{modemData.Data}****");
-                switch (command.Process(modemData))
+                switch (await command.Process(modemData))
                 {
                     case CommandProgress.Finished:
                         {

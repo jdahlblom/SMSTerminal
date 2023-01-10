@@ -3,7 +3,7 @@ using SMSTerminal.General;
 
 namespace SMSTerminal.Events
 {
-    public class ModemMessageEventArgs
+    public class ModemInternalEventArgs
     {
         internal string ModemId { get; init; }
         internal ModemResultEnum ModemResult { get; init; } = ModemResultEnum.None;

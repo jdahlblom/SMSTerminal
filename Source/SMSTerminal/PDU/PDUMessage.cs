@@ -4,13 +4,17 @@ using SMSTerminal.Interfaces;
 
 namespace SMSTerminal.PDU
 {
+    /// <summary>
+    /// This is the message as received from the modem. Use ToString()
+    /// to see all field information.
+    /// </summary>
     internal class PDUMessage : IModemMessage
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        
+
         private string _unDecodedMessage;
         private string _readableMessage;
-        
+
         public PDUHeader PDUHeader { get; set; }
         public PDUTypeOfAddress SMSCTypeOfAddress { get; set; }
         public PDUTypeOfAddress SenderTypeOfAddress { get; set; }
@@ -20,7 +24,7 @@ namespace SMSTerminal.PDU
         public PDUDataCodingScheme PDUDataCodingScheme { get; set; }
         public bool HasBeenConcatenated { get; set; }
         public int StatusReportReference { get; set; }
-        public TpStatus StatusReportStatus { get;  set; } = TpStatus.TP_STATUS_NONE;
+        public TpStatus StatusReportStatus { get; set; } = TpStatus.TP_STATUS_NONE;
         public DateTimeOffset DateSent => PDUTimeStamp.GetDateTimeOffset();
         public DateTimeOffset DateReceived { get; set; }
         public string RawMessage { get; set; } = "";
@@ -31,7 +35,7 @@ namespace SMSTerminal.PDU
         /// <summary>
         /// After this period message can be deleted. Probably an orphan CSMS.
         /// </summary>
-        private long MaxAgeMilliSecs { get;}
+        private long MaxAgeMilliSecs { get; }
         public string ModemTelephone { get; set; }
         public bool DeletedFromTA { get; set; }
         /*
@@ -63,7 +67,7 @@ namespace SMSTerminal.PDU
                 RawMessage = RawMessage.Substring(0, 7900);
             }
         }
-        
+
         public void AddMemorySlot(int memorySlot)
         {
             if (!MemorySlots.Exists(o => o == memorySlot))
@@ -94,16 +98,8 @@ namespace SMSTerminal.PDU
         {
             try
             {
-                if (PDUUserDataHeader != null)
-                {
-                    //Logger.Debug("Will now decode [udh] = ->{0}<- message ->{1}<-", PDUUserDataHeader.GetHeaderAsHexString(), _unDecodedMessage);
-                    Message = new PDUDecoder().Decode(PDUUserDataHeader, PDUDataCodingScheme.SMSEncoding, _unDecodedMessage);
-                }
-                else
-                {
-                    //Logger.Debug("Will now decode (no udh) = message ->{0}<-", _unDecodedMessage );
-                    Message = new PDUDecoder().Decode(PDUUserDataHeader, PDUDataCodingScheme.SMSEncoding, _unDecodedMessage);
-                }
+                //Logger.Debug("Will now decode [udh] = ->{0}<- message ->{1}<-", PDUUserDataHeader.GetHeaderAsHexString(), _unDecodedMessage);
+                Message = new PDUDecoder().Decode(PDUUserDataHeader, PDUDataCodingScheme.SMSEncoding, _unDecodedMessage);
             }
             catch (Exception ex)
             {
@@ -157,7 +153,7 @@ namespace SMSTerminal.PDU
                 }
                 foreach (var pduInformationElement in informationElementList)
                 {
-                    if (pduInformationElement.IEI == IEIEnum.Concatenated_Short_Messages_8Bit_Reference || 
+                    if (pduInformationElement.IEI == IEIEnum.Concatenated_Short_Messages_8Bit_Reference ||
                         pduInformationElement.IEI == IEIEnum.Concatenated_Short_Messages_16Bit_Reference)
                     {
                         return ((PDUIEICSMS)pduInformationElement).MessagePartsTotal;
@@ -207,11 +203,11 @@ namespace SMSTerminal.PDU
                 return 0;
             }
         }
-        
+
         public override string ToString()
         {
-            return string.Format(Environment.NewLine + 
-                                 Environment.NewLine + "----------------------------------" + 
+            return string.Format(Environment.NewLine +
+                                 Environment.NewLine + "----------------------------------" +
                                  Environment.NewLine + "PDUModemMessage :" + Environment.NewLine +
                                 "HasBeenProcessedForConcatenation: {0}" + Environment.NewLine +
                                 "HasExpired: {1}" + Environment.NewLine +
@@ -232,10 +228,10 @@ namespace SMSTerminal.PDU
                                 "ReadableMessage : {16}" + Environment.NewLine +
                                  "IsConcatenated : {17}" + Environment.NewLine +
                                  "MessageReference : {18}" + Environment.NewLine +
-                                "----------------------------------" + Environment.NewLine, 
-                HasBeenConcatenated, HasExpired(), string.Join(",", MemorySlots), PDUDataCodingScheme, 
-                PDUHeader, PDUProtocolIdentifier, PDUTimeStamp, PDUUserDataHeader, 
-                RawMessage, SenderTypeOfAddress, SMSCTypeOfAddress, _unDecodedMessage, 
+                                "----------------------------------" + Environment.NewLine,
+                HasBeenConcatenated, HasExpired(), string.Join(",", MemorySlots), PDUDataCodingScheme,
+                PDUHeader, PDUProtocolIdentifier, PDUTimeStamp, PDUUserDataHeader,
+                RawMessage, SenderTypeOfAddress, SMSCTypeOfAddress, _unDecodedMessage,
                 StatusReportReference, StatusReportStatus, PDUStatusReportSmsDischargeTimeStamp, Telephone, Message, IsCMS, MessageReference);
         }
     }

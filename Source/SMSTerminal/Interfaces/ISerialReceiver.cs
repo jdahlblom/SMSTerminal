@@ -2,6 +2,9 @@
 
 namespace SMSTerminal.Interfaces
 {
+    /// <summary>
+    /// Receives the modem output from the serial port.
+    /// </summary>
     internal interface ISerialReceiver
     {
         IModem Modem { get; set; }

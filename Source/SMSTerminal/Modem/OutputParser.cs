@@ -65,15 +65,16 @@ namespace SMSTerminal.Modem
                      * processed messages shouldn't be returned. modemOutput can contain incomplete (still incoming)
                      * modem output that will be processed later on.
                      */
-                    Logger.Debug($"Read this from modem:\n\n->{outputBuffer}<-");
+                    Logger.Debug($"Read this message from modem ({outputBuffer.Length}) chars:\n\n->{outputBuffer}<-");
                     modemOutput = modemOutput[outputBuffer.Length..];
+                    Logger.Debug($"Rest of buffer is ({modemOutput.Length}) chars:\n\n->{modemOutput}<-");
                     ModemData modemData = null;
                     try
                     {
                         modemData = new ModemData(outputBuffer.ToString());
                         if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting)
                         {
-                            ModemEventManager.ModemMessageEvent(this, _modem.ModemId, modemData.ModemResult, modemData.ModemDataClass, modemData.Data);
+                            ModemEventManager.ModemInternalEvent(this, _modem.ModemId, modemData.ModemResult, modemData.ModemDataClass, modemData.Data);
                         }
                         else
                         {
