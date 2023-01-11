@@ -39,7 +39,16 @@ internal class ATGetModemInformationCommand : ATCommandBase
 
             if (modemData.HasError)
             {
-                return CommandProgress.Error;
+                if (CommandIndex == 3)
+                {
+                    //Ignore, older modem(s) don't have this
+                    ICCID = "Error";
+                    return CommandProgress.Finished;
+                }
+                else
+                {
+                    return CommandProgress.Error;
+                }
             }
 
             //AT+CGMI\nTelit\r\n\r\nOK\r\n

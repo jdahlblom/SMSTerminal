@@ -76,8 +76,7 @@ public class ModemManager : IDisposable, IModemInternalListener
     {
         try
         {
-            if (e.ModemMessageClass != ModemDataClassEnum.NewSMSWaiting ||
-                e.ModemMessageClass != ModemDataClassEnum.NewStatusReportWaiting) return;
+            if (e.ModemMessageClass != ModemDataClassEnum.NewSMSWaiting) return;
 
             foreach (var modem in _modems.Where(modem => modem.ModemId == e.ModemId))
             {
@@ -122,7 +121,7 @@ public class ModemManager : IDisposable, IModemInternalListener
             }
 
             modem = new Modem(gsmModemConfig);
-                
+
             var outputParser = new OutputParser(modem);
             var serialReceiver = new SerialReceiver(outputParser)
             {
@@ -230,7 +229,17 @@ public class ModemManager : IDisposable, IModemInternalListener
     {
         foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
         {
-            return await _modems[0].ExecuteCommand(new ATGetNetworkStatusCommand(_modems[0]));
+            return await modem.ExecuteCommand(new ATGetNetworkStatusCommand(modem));
+        }
+        return false;
+    }
+
+    public async Task<bool> ExecuteATCommand(string modemId, string atCommand, string terminationString)
+    {
+        foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
+        {
+            var command = new ATGenericCommand(modem, atCommand, terminationString);
+            return await modem.ExecuteCommand(command);
         }
         return false;
     }

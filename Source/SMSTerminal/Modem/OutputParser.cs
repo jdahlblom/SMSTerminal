@@ -76,7 +76,7 @@ internal class OutputParser : IOutputParser
                 try
                 {
                     modemData = new ModemData(outputBuffer.ToString());
-                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting || modemData.ModemDataClass == ModemDataClassEnum.NewStatusReportWaiting)
+                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting)
                     {
                         ModemEventManager.ModemInternalEvent(this, _modem.ModemId, modemData.ModemResult, modemData.ModemDataClass, modemData.Data);
                     }

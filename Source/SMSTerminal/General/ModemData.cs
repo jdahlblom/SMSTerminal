@@ -7,7 +7,6 @@ public enum ModemDataClassEnum
 {
     None,
     NewSMSWaiting,
-    NewStatusReportWaiting,
     UnknownModemData
 }
 
@@ -56,16 +55,9 @@ internal class ModemData
             /*
              * New SMS in modem memory (unsolicited)
              */
-            if (Data.Contains(ATMarkers.NewSMSArrivedMT) || Data.Contains(ATMarkers.NewSMSArrivedSM))
+            if (ATMarkers.NewMessageMarkerList.Any(Data.Contains))
             {
                 ModemDataClass = ModemDataClassEnum.NewSMSWaiting;
-            }
-            /*
-             * New Status Report in modem memory (unsolicited)
-             */
-            if (Data.Contains(ATMarkers.NewStatusReportArrivedSR))
-            {
-                ModemDataClass = ModemDataClassEnum.NewStatusReportWaiting;
             }
         }
         catch (Exception e)
@@ -106,7 +98,7 @@ internal class ModemData
         return $"ModemDataClass = {ModemDataClass}\n" +
                $"HasCError = {HasCError}\n" +
                $"CErrorMessage = {CErrorMessage}\n" +
-               $"ModemDataStatus = {ModemResult}" +
+               $"ModemDataStatus = {ModemResult}\n" +
                $"Data ->{Data}<-";
     }
 }

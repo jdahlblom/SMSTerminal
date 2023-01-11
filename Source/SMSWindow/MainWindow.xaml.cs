@@ -119,6 +119,8 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         ButtonClearInSMS.IsEnabled = !string.IsNullOrEmpty(TextBoxIncomingSMS.Text);
         ButtonClearModemLog.IsEnabled = !string.IsNullOrEmpty(TextBoxModemLog.Text);
         ButtonClearUnknown.IsEnabled = !string.IsNullOrEmpty(TextBoxUnknownModemData.Text);
+
+        ButtonExecuteATCommand.IsEnabled = _modemManager.HasModems && !string.IsNullOrEmpty(TextBoxATCommand.Text);
         //ButtonClear.IsEnabled = !string.IsNullOrEmpty(TextBox.Text);
     }
 
@@ -416,5 +418,39 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     private void ButtonClearUnknown_OnClick(object sender, RoutedEventArgs e)
     {
         TextBoxUnknownModemData.Text = "";
+    }
+
+    private async void ButtonExecuteATCommand_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!await _modemManager.ExecuteATCommand((string)ComboBoxModem.SelectedValue, TextBoxATCommand.Text, ATTerminationEnum.ATEndPart))
+            {
+                MessageBox.Show(this, $"Failed to execute {TextBoxATCommand.Text}. {(string)ComboBoxModem.SelectedValue}", "Error", MessageBoxButton.OK);
+            }
+
+            SetFormState();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
+    }
+    
+    private void TextBoxATCommand_OnKeyDown(object sender, KeyEventArgs e)
+    {
+        try
+        {
+            if (e.Key == Key.Enter && !string.IsNullOrEmpty(TextBoxATCommand.Text))
+            {
+                ButtonExecuteATCommand_OnClick(this, e);
+            }
+
+            SetFormState();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
     }
 }

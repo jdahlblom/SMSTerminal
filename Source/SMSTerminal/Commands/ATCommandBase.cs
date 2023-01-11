@@ -74,7 +74,7 @@ internal abstract class ATCommandBase : ICommand
     {
         try
         {
-            ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} was successful . {Result}", ModemEventType.ModemComms, Modem.ModemId, ModemResultEnum.Ok);
+            ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} was successful . {Result} \n\n\n\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, ModemResultEnum.Ok);
         }
         catch (Exception e)
         {
@@ -89,11 +89,11 @@ internal abstract class ATCommandBase : ICommand
             var modemData = ATCommandsList[CommandIndex].ModemData;
             if (modemData.HasCError)
             {
-                ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} resulted in {modemData.CErrorMessage}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
+                ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} resulted in {modemData.CErrorMessage}\n\n\n\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
             }
             else
             {
-                ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString}  resulted in error. {Result}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
+                ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString}  resulted in error. {Result}\n\n\n\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
             }
         }
         catch (Exception e)

@@ -47,11 +47,11 @@
         <DockPanel Grid.Row="0" Grid.Column="1">
             <Label Content="Comms" HorizontalAlignment="Left"></Label>
         </DockPanel>
-        <DockPanel Grid.Row="1" Grid.Column="1" Grid.RowSpan="3">
+        <DockPanel Grid.Row="1" Grid.Column="1" Grid.RowSpan="2">
             <TextBox Name="TextBoxModemLog" Height="370" DockPanel.Dock="Top" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap"  HorizontalAlignment="Stretch" TextChanged="TextBox_OnTextChanged"/>
             <DockPanel DockPanel.Dock="Bottom">
                 <Label Content="Errors :" DockPanel.Dock="Top"/>
-                <TextBox Name="TextBoxErrors" Height="180" DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" TextChanged="TextBox_OnTextChanged"/>
+                <TextBox Name="TextBoxErrors" DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" TextChanged="TextBox_OnTextChanged"/>
             </DockPanel>
         </DockPanel>
         <DockPanel Grid.Row="0" Grid.Column="2">
@@ -97,27 +97,42 @@
             </DockPanel>
         </StackPanel>
 
-        <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Name="ButtonClearErrors" Content="Clear Errors" Height="22" Margin="0,5,10,5" Click="ButtonClearErrors_OnClick"/>
             <Button Name="ButtonClearModemLog" Content="Clear Comms" Height="22" Margin="0,5,10,5" Click="ButtonClearModemLog_OnClick"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right">
-            <StackPanel Orientation="Horizontal">
-                <Button Name="ButtonConnect" Content="Connect Modem" Height="22" Margin="0,5,10,5" Click="ButtonConnect_OnClick"/>
-                <Button Name="ButtonDisconnect" Content="Disconnect Modem" Height="22" Margin="0,5,10,5" Click="ButtonDisconnect_OnClick"/>
-                <Button Name="ButtonSettings" Content="Settings" Height="22" Margin="0,5,10,5" Click="ButtonSettings_OnClick" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Name="ButtonErrorCommand" Content="Error Command" Height="22" Margin="0,5,10,5" Click="ButtonErrorCommand_OnClick" />
-                <Button Name="ButtonRestartModem" Content="Restart Modem" Height="22" Margin="0,5,10,5" Click="ButtonRestartModem_OnClick" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Name="ButtonReadNewSMS" Content="Read New SMS" Height="22" Margin="0,5,10,5" Click="ButtonReadNewSMS_OnClick" />
-                <Button Name="ButtonReadOldSMS" Content="Read Old SMS" Height="22" Margin="0,5,10,5" Click="ButtonReadOldSMS_OnClick" />
-                <Button Name="ButtonNetworkStatus" Content="Network Status" Height="22" Margin="0,5,10,5" Click="ButtonNetworkStatus_OnClick"/>
-            </StackPanel>
-        </StackPanel>
+        <TabControl Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" >
+            <TabItem  Header="Connect">
+                <TabPanel HorizontalAlignment="Right">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Name="ButtonConnect" Content="Connect Modem" Height="22" Margin="0,5,10,5" Click="ButtonConnect_OnClick"/>
+                            <Button Name="ButtonDisconnect" Content="Disconnect Modem" Height="22" Margin="0,5,10,5" Click="ButtonDisconnect_OnClick"/>
+                            <Button Name="ButtonSettings" Content="Settings" Height="22" Margin="0,5,10,5" Click="ButtonSettings_OnClick" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Name="ButtonErrorCommand" Content="Error Command" Height="22" Margin="0,5,10,5" Click="ButtonErrorCommand_OnClick" />
+                            <Button Name="ButtonRestartModem" Content="Restart Modem" Height="22" Margin="0,5,10,5" Click="ButtonRestartModem_OnClick" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Name="ButtonReadNewSMS" Content="Read New SMS" Height="22" Margin="0,5,10,5" Click="ButtonReadNewSMS_OnClick" />
+                            <Button Name="ButtonReadOldSMS" Content="Read Old SMS" Height="22" Margin="0,5,10,5" Click="ButtonReadOldSMS_OnClick" />
+                            <Button Name="ButtonNetworkStatus" Content="Network Status" Height="22" Margin="0,5,10,5" Click="ButtonNetworkStatus_OnClick"/>
+                        </StackPanel>
+                    </StackPanel>
+                </TabPanel>
+            </TabItem>
+            <TabItem Header="AT Commands">
+                <TabPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Label Content="AT Command:" Margin="10,10,0,0"></Label>
+                        <TextBox Name="TextBoxATCommand" Margin="10,10,0,0" Width="200" TextChanged="TextBox_OnTextChanged" KeyDown="TextBoxATCommand_OnKeyDown"></TextBox>
+                        <Button Name="ButtonExecuteATCommand" Margin="10,10,0,0" Content="Execute" Click="ButtonExecuteATCommand_OnClick"></Button>
+                    </StackPanel>
+                </TabPanel>
+            </TabItem>
+        </TabControl>
 
         <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Name="ButtonClearInSMS" Content="Clear SMS" Height="22" Margin="0,5,10,5" Click="ButtonClearIncomingSMS_OnClick"/>

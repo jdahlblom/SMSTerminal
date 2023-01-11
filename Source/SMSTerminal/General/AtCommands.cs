@@ -2,7 +2,7 @@
 
 namespace SMSTerminal.General;
 
-internal static class ATMarkers
+public static class ATMarkers
 {
     //***********************************************************************
     public const string MemoryStorage = "+CMGL: "; //This is included when querying for SMS and there exists SMS
@@ -35,6 +35,12 @@ internal static class ATMarkers
     public const string ErrorKeyword = "ERROR";
 }
 
+public class ATTerminationEnum
+{
+    public const string ATEndPart = "\r\n";
+    public const char ATCommandCtrlZ = '\u001A';
+}
+
 internal static class ATCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -42,12 +48,12 @@ internal static class ATCommands
      * With this activated the AT+CNMI= will work (remember to set LineSignalDtr = true)
      * AT+CSMS=1 GSM 07.05 Phase 2+ version compatibility
      * AT+CNMI New short Message Indication unsolicited
-     */ 
+     */
     //public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,2,0,2,1";
-    public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,1,0,2,1";  // 2nd changes format of unsolicited SMS message
+    //public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,1,0,1,1";  // 2nd changes format of unsolicited SMS message
+    public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,1,0,2,1";
     public const string UseVerboseErrorsCommand = "AT+CMEE=2";
     //***********************************************************************
-    public const string ATEndPart = "\r\n";
     //***********************************************************************
     public const string ATKeepSMSRelayLinkOpen = "AT+CMMS=1";
     //***********************************************************************
@@ -56,13 +62,15 @@ internal static class ATCommands
     public const string ATReadAllSms = "AT+CMGF=0;+CMGL=0;+CMGL=1"; // PDU mode and read all SMS
     public const string ATReadUnreadSms = "AT+CMGF=0;+CMGL=0"; // PDU mode and read unread SMS  
     public const string ATReadReadSms = "AT+CMGF=0;+CMGL=1"; // PDU mode and read read SMS
-    //public const string AtUnsolicitedNewSMSAck = "AT+CNMA=0\r\n"; // 
+    //***********************************************************************
+    public const string ATSMSStatusReportACK = "AT+CNMA=0\r\n"; // 
     //***********************************************************************
     public const string ATDeleteAllReadSms = "AT+CMGD=1,1";
     public const string ATDeleteAllSmsFromModem = "AT+CMGD=1,4";
     public const string ATDeleteSmsAtMemorySlot = "AT+CMGD=";
     //***********************************************************************
-    public const char ATCommandCtrlZ = '\u001A'; // Was string ((char)26).ToString(); //U+001A   '\u001A'
+    public const string ATEndPart = "\r\n";
+    public const char ATCommandCtrlZ = '\u001A'; // Was string ((char)26).ToString(); //U+001A  '\u001A'
     public const char ATCommandEscape = '\u001B'; //was string ((char)27).ToString(); //U+001B  '\u001B'
     //***********************************************************************
     public const string ATIncomingCallIndicator = "RING";
@@ -90,6 +98,10 @@ internal static class ATCommands
     public const string ATForceError = "AT+ABCD";
     //***********************************************************************
     public const string ATRestartModem = "AT+CFUN=1,1";
+    //***********************************************************************
+    public const string ATGetAvailableMemoryTypes = "AT+CPMS=?";
+    public const string ATSetMemoryTypesUsed = "AT+CPMS="; //AT+CPMS="ME","ME","ME"
+    public const string ATGetMemoryUsage = "AT+CPMS?";
     //***********************************************************************
 
 
@@ -131,9 +143,7 @@ internal static class ATCommands
     //***********************************************************************
 
     //+CMTI: "MT",7  < message arrived and is located there
-
-
-    //public readonly string AtSendSmsP1 = "AT+CMGF=1;+CSCS=\"8859-1\";+CMGS=\"";
+    
     //public readonly string _atTurnOffRssi = "AT^CURC=0\r\n";, turn off ^RSSI:XX messages (Received signal strength indication) (Turn off Unsolicited Report Codes)
     /*
 
