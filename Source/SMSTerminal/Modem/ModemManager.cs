@@ -76,7 +76,8 @@ public class ModemManager : IDisposable, IModemInternalListener
     {
         try
         {
-            if (e.ModemMessageClass != ModemDataClassEnum.NewSMSWaiting) return;
+            if (e.ModemMessageClass != ModemDataClassEnum.NewSMSWaiting ||
+                e.ModemMessageClass != ModemDataClassEnum.NewStatusReportWaiting) return;
 
             foreach (var modem in _modems.Where(modem => modem.ModemId == e.ModemId))
             {

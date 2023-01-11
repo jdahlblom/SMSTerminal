@@ -180,7 +180,8 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
                 MessageId = _messagedId++.ToString(),
                 Message = TextBoxSMSText.Text,
                 SMSEncoding = (SMSEncoding)ComboBoxEncoding.SelectedValue,
-                ReceiverTelephone = TextBoxTphNumber.Text
+                ReceiverTelephone = TextBoxTphNumber.Text,
+                RequestStatusReport = CheckBoxStatusReport.IsChecked is true
             };
 
             TextBoxOutgoingSMSLog.Text = TextBoxOutgoingSMSLog.Text + Environment.NewLine + $"Sending ({outgoingSms.Message.Length}) : " +

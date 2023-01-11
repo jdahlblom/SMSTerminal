@@ -150,7 +150,7 @@ internal class Modem : IDisposable, IModem
             {
                 var cts = new CancellationTokenSource(ModemTimings.ModemReplyWait);
                 var modemData = await ModemDataChannel.Reader.ReadAsync(cts.Token);
-                Logger.Debug($"Modem sees => ****{modemData.Data}****");
+                Logger.Debug($"Modem sees \n->{modemData.Data}<-");
                 switch (await command.Process(modemData))
                 {
                     case CommandProgress.Finished:

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using NLog;
 using SMSTerminal.Events;
@@ -59,6 +60,7 @@ internal class OutputParser : IOutputParser
         foreach (var line in outputLines)
         {
             outputBuffer.Append(line);
+            
             if (outputBuffer.ToString().ContainsOutputEndMarker())
             {
                 /*
@@ -74,7 +76,7 @@ internal class OutputParser : IOutputParser
                 try
                 {
                     modemData = new ModemData(outputBuffer.ToString());
-                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting)
+                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting || modemData.ModemDataClass == ModemDataClassEnum.NewStatusReportWaiting)
                     {
                         ModemEventManager.ModemInternalEvent(this, _modem.ModemId, modemData.ModemResult, modemData.ModemDataClass, modemData.Data);
                     }

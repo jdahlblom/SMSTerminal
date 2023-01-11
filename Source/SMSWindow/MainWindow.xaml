@@ -77,17 +77,21 @@
                 <Label Content="Recipient Tph" VerticalAlignment="Center" DockPanel.Dock="Left"/>
                 <TextBox Name="TextBoxTphNumber" Width="150" Height="22" DockPanel.Dock="Right" HorizontalAlignment="Right" ></TextBox>
             </DockPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Label Content="chars : " DockPanel.Dock="Left"/>
-                <ComboBox Name="ComboBoxLongSMS" SelectedValuePath="Content" DockPanel.Dock="Right" Height="22" IsReadOnly="True" SelectedIndex="0" SelectionChanged="ComboBoxLongSMS_OnSelectionChanged">
-                    <ComboBoxItem>160</ComboBoxItem>
-                    <ComboBoxItem>170</ComboBoxItem>
-                    <ComboBoxItem>330</ComboBoxItem>
-                    <ComboBoxItem>490</ComboBoxItem>
-                    <ComboBoxItem>650</ComboBoxItem>
-                    <ComboBoxItem>810</ComboBoxItem>
-                </ComboBox>
-            </StackPanel>
+
+            <DockPanel Margin="0,5,0,5">
+                <CheckBox Name="CheckBoxStatusReport" Content="Request Status Report" VerticalAlignment="Center" Margin="0,0,0,0"></CheckBox>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Label Content="chars : " DockPanel.Dock="Left"/>
+                    <ComboBox Name="ComboBoxLongSMS" SelectedValuePath="Content" DockPanel.Dock="Right" Height="22" IsReadOnly="True" SelectedIndex="0" SelectionChanged="ComboBoxLongSMS_OnSelectionChanged">
+                        <ComboBoxItem>160</ComboBoxItem>
+                        <ComboBoxItem>170</ComboBoxItem>
+                        <ComboBoxItem>330</ComboBoxItem>
+                        <ComboBoxItem>490</ComboBoxItem>
+                        <ComboBoxItem>650</ComboBoxItem>
+                        <ComboBoxItem>810</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+            </DockPanel>
             <DockPanel>
                 <Button Name="ButtonSend" Content="Send" Height="22"  Margin="0,5,0,5" Click="ButtonSend_OnClick" />
             </DockPanel>

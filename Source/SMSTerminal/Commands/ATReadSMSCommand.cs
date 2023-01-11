@@ -17,17 +17,17 @@ public enum SMSReadStatus
 /// </summary>
 internal class ATReadSMSCommand : ATCommandBase
 {
-    private readonly string _commandString;
+    private readonly string _readCommandString;
 
 
     public ATReadSMSCommand(IModem modem, SMSReadStatus smsReadStatus)
     {
         Modem = modem;
         CommandType = $"[Read [{smsReadStatus}] SMS Command]";
-        _commandString = smsReadStatus == SMSReadStatus.Read
+        _readCommandString = smsReadStatus == SMSReadStatus.Read
             ? ATCommands.ATReadReadSms
             : ATCommands.ATReadUnreadSms;
-        ATCommandsList.Add(new ATCommand(_commandString, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommand(_readCommandString, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)
@@ -49,25 +49,26 @@ internal class ATReadSMSCommand : ATCommandBase
                 return CommandProgress.Error;
             }
 
-            if (modemData.Data.Contains(_commandString))
+            if (modemData.Data.Contains(_readCommandString))
             {
-                var readMessages = PDUMessageParser.ParseRawModemOutput(modemData.Data);
-                Logger.Debug("PDU returned {0} messages.", readMessages.Count);
-                if (readMessages.Count == 0)
+                var readCompleteMessages = PDUMessageParser.ParseRawModemOutput(modemData.Data);
+                Logger.Debug("PDU returned {0} complete messages, {1} fragmented messages exist.",
+                    readCompleteMessages.Count, PDUMessageParser.FragmentCSMSMessages.Count);
+                
+                if (readCompleteMessages.Count > 0)
                 {
-                    return CommandProgress.Finished;
-                }
-
-                /*
-                 * Send event about new SMS and also add delete from memory command
-                 */
-                foreach (var modemMessage in readMessages)
-                {
-                    ModemEventManager.NewSMSEvent(this, IncomingSms.Convert(modemMessage), modemMessage);
-                    if (!Modem.GsmModemConfig.DeleteSMSFromModemWhenRead) break;
-                    foreach (var i in modemMessage.MemorySlots)
+                    /*
+                     * Send event about new SMS and also add delete from memory command
+                     */
+                    foreach (var modemMessage in readCompleteMessages)
                     {
-                        ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i));
+                        ModemEventManager.NewSMSEvent(this, IncomingSms.Convert(modemMessage), modemMessage);
+                        if (!Modem.GsmModemConfig.DeleteSMSFromModemWhenRead) break;
+                        foreach (var i in modemMessage.MemorySlots)
+                        {
+                            ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i,
+                                ATCommands.ATEndPart, i));
+                        }
                     }
                 }
 
@@ -86,15 +87,16 @@ internal class ATReadSMSCommand : ATCommandBase
                     }
                 }
 
-                return CommandProgress.NextCommand; //Start doing the delete commands
+                return HasNextATCommand ? CommandProgress.NextCommand : CommandProgress.Finished;
             }
-                
+
+
             if (modemData.Data.Contains(ATCommands.ATDeleteSmsAtMemorySlot))
             {
                 /*
                  * A SMS that belongs to a CSMS but hasn't yet been assembled because all parts haven't yet arrived.
                  */
-                if(ATCommandsList[CommandIndex].StringHolder == "Fragment")
+                if (ATCommandsList[CommandIndex].StringHolder == "Fragment")
                 {
                     PDUMessageParser.MarkFragmentDeletedTA(ATCommandsList[CommandIndex].NumberHolder);
                 }
@@ -113,5 +115,5 @@ internal class ATReadSMSCommand : ATCommandBase
 
         return CommandProgress.Finished;
     }
-        
+
 }

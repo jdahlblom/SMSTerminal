@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using SMSTerminal.Events;
 using SMSTerminal.Interfaces;
@@ -93,11 +94,8 @@ public static class ExtensionMethods
     {
         if (string.IsNullOrEmpty(message)) return false;
 
-        return message.Contains(ATMarkers.NewSMSArrivedSM) ||
-               message.Contains(ATMarkers.NewSMSArrivedMT) ||
-               message.Contains(ATMarkers.NewSMSArrivedME) ||
+        return ATMarkers.NewMessageMarkerList.Any(s => message.Contains(s)) ||
                ATCommands.ContainsResultCode(message) ||
-               //ATCommands.ContainsEscapeChars(message) ||
                message.Contains(ATMarkers.ReadyPrompt);
     }
 

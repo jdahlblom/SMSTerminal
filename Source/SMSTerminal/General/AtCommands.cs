@@ -4,18 +4,27 @@ namespace SMSTerminal.General;
 
 internal static class ATMarkers
 {
+    //***********************************************************************
     public const string MemoryStorage = "+CMGL: "; //This is included when querying for SMS and there exists SMS
+    //***********************************************************************
     public const string NewSMSArrivedSM = "+CMTI: \"SM\""; //This comes when there is new SMS. (unsolicited message)
     public const string NewSMSArrivedMT = "+CMTI: \"MT\""; //This comes when there is new SMS. (unsolicited message)
     public const string NewSMSArrivedME = "+CMTI: \"ME\""; //This comes when there is new SMS. (unsolicited message)
-        
+    public const string NewStatusReportArrivedSR = "+CDSI: \"SR\""; //This comes when there is a new Status Report. (unsolicited message)
+    public const string NewStatusReportArrivedSM = "+CDSI: \"SM\""; //This comes when there is a new Status Report. (unsolicited message)
+    public const string NewStatusReportArrivedMT = "+CDSI: \"MT\""; //This comes when there is a new Status Report. (unsolicited message)
+    public const string NewStatusReportArrivedME = "+CDSI: \"ME\""; //This comes when there is a new Status Report. (unsolicited message)
+    public static readonly List<string> NewMessageMarkerList = new()
+    {
+        NewSMSArrivedSM, NewSMSArrivedMT, NewSMSArrivedME, NewStatusReportArrivedSR, NewStatusReportArrivedSM, NewStatusReportArrivedMT, NewStatusReportArrivedME
+    };
+    //***********************************************************************
     public const string SMSDeleted = "AT+CMGD="; //This comes when there SMS has been deleted todo memory slot information
     public const string SMSMessageFormat = "AT+CMGF="; //Modem reply contains this after initializing the modem to receive SMS data 
     public const string SMSSent = "+CMGS: "; //Modem reply contains this after SMS transmission
     public const string NetworkStatusRequestCommand = "AT+CREG?";
     public const string NetworkInformation = "+CREG: "; //Modem reply contains this after querying network information
     public const string ReadyPrompt = "> "; //Modem is ready for the SMS data
-
     //***********************************************************************
     public const string OkReply = "\rOK";
     public const string CMSErrorReply = "\r+CMS ERROR: ";
@@ -33,8 +42,8 @@ internal static class ATCommands
      * With this activated the AT+CNMI= will work (remember to set LineSignalDtr = true)
      * AT+CSMS=1 GSM 07.05 Phase 2+ version compatibility
      * AT+CNMI New short Message Indication unsolicited
-     */
-    //public const string AtGSMPhase2Command = "AT+CSMS=1;+CNMI=2,2,0,2,1";
+     */ 
+    //public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,2,0,2,1";
     public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,1,0,2,1";  // 2nd changes format of unsolicited SMS message
     public const string UseVerboseErrorsCommand = "AT+CMEE=2";
     //***********************************************************************
@@ -44,8 +53,8 @@ internal static class ATCommands
     //***********************************************************************
     public const string ATSendSmsPDU = "AT+CMGF=0;+CMGS=";
     //***********************************************************************
-    public const string ATReadAllSms = "AT+CMGF=0;+CMGL=0;+CMGL=1"; // PDU mode and read all SMS  AT+CMGF=0;+CMGL=0;+CMGL=1
-    public const string ATReadUnreadSms = "AT+CMGF=0;+CMGL=0"; // PDU mode and read unread SMS  AT+CMGF=0;+CMGL=0;+CMGL=1
+    public const string ATReadAllSms = "AT+CMGF=0;+CMGL=0;+CMGL=1"; // PDU mode and read all SMS
+    public const string ATReadUnreadSms = "AT+CMGF=0;+CMGL=0"; // PDU mode and read unread SMS  
     public const string ATReadReadSms = "AT+CMGF=0;+CMGL=1"; // PDU mode and read read SMS
     //public const string AtUnsolicitedNewSMSAck = "AT+CNMA=0\r\n"; // 
     //***********************************************************************
@@ -58,7 +67,6 @@ internal static class ATCommands
     //***********************************************************************
     public const string ATIncomingCallIndicator = "RING";
     public const string ATIncomingCallIndicator2 = "+CRING";
-    //***********************************************************************
     public const string ATDisconnectIncomingCallCommand = "ATH";
     //***********************************************************************
     public const string ATQueryCommand = "AT\r";
@@ -90,11 +98,11 @@ internal static class ATCommands
     {
         lock (LockContainsResultCode)
         {
-            return s.Contains(ATCommandCtrlZ)||
+            return s.Contains(ATCommandCtrlZ) ||
                    s.Contains(ATCommandEscape);
         }
     }
-        
+
     internal static bool ContainsResultCode(string s)
     {
         lock (LockContainsResultCode)
