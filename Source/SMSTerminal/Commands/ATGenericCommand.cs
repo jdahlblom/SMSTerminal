@@ -4,8 +4,7 @@ using SMSTerminal.Interfaces;
 namespace SMSTerminal.Commands;
 
 /// <summary>
-/// Command used to deliberately cause error on the modem side.
-/// Used to see application behaviour.
+/// Generic Command used to execute ad-hoc AT commands.
 /// </summary>
 internal class ATGenericCommand : ATCommandBase
 {

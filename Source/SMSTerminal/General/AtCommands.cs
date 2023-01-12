@@ -48,10 +48,16 @@ internal static class ATCommands
      * With this activated the AT+CNMI= will work (remember to set LineSignalDtr = true)
      * AT+CSMS=1 GSM 07.05 Phase 2+ version compatibility
      * AT+CNMI New short Message Indication unsolicited
+     *
+     * 1) buffering/handling/forwarding of unsolicited result codes
+     * 2) how new SMS (SMS-DELIVER) are stored and if URC should be sent to TE
+     * 3) whether Cell Broadcast Message Indication are forwarded using URC
+     * 4) how "SMS Read" SMS-STATUS-REPORT is forwarded to TE  (e.g. +CMTI: "MT",1)
+     * 5) whether TA buffer holding URC should be cleared (>0)
      */
     //public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,2,0,2,1";
-    //public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,1,0,1,1";  // 2nd changes format of unsolicited SMS message
-    public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,1,0,2,1";
+    public const string ATGSMPhase2Command = "AT+CSMS=1;+CNMI=2,1,0,1,1";
+    
     public const string UseVerboseErrorsCommand = "AT+CMEE=2";
     //***********************************************************************
     //***********************************************************************
@@ -100,8 +106,8 @@ internal static class ATCommands
     public const string ATRestartModem = "AT+CFUN=1,1";
     //***********************************************************************
     public const string ATGetAvailableMemoryTypes = "AT+CPMS=?";
+    public const string ATGetChosenMemoryUsage = "AT+CPMS?";
     public const string ATSetMemoryTypesUsed = "AT+CPMS="; //AT+CPMS="ME","ME","ME"
-    public const string ATGetMemoryUsage = "AT+CPMS?";
     //***********************************************************************
 
 

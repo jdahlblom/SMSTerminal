@@ -102,7 +102,7 @@
             <Button Name="ButtonClearModemLog" Content="Clear Comms" Height="22" Margin="0,5,10,5" Click="ButtonClearModemLog_OnClick"/>
         </StackPanel>
 
-        <TabControl Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" >
+        <TabControl Grid.Column="1" Grid.Row="4" Grid.RowSpan="2"  Margin="3,0,0,0">
             <TabItem  Header="Connect">
                 <TabPanel HorizontalAlignment="Right">
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
@@ -129,6 +129,49 @@
                         <Label Content="AT Command:" Margin="10,10,0,0"></Label>
                         <TextBox Name="TextBoxATCommand" Margin="10,10,0,0" Width="200" TextChanged="TextBox_OnTextChanged" KeyDown="TextBoxATCommand_OnKeyDown"></TextBox>
                         <Button Name="ButtonExecuteATCommand" Margin="10,10,0,0" Content="Execute" Click="ButtonExecuteATCommand_OnClick"></Button>
+                    </StackPanel>
+                </TabPanel>
+            </TabItem>
+            <TabItem Header="SMS Memory">
+                <TabPanel>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="LightGray">
+                            <Label Content="Memory1 =>" FontWeight="Medium" FontSize="11" Margin="0,0,0,0"></Label>
+                            <Label Content="Type :" FontWeight="Medium" FontSize="11" Margin="0,0,0,0"></Label>
+                            <Label Name="LabelMemory1Type" FontSize="11" Margin="0,0,0,0"></Label>
+                            <Label Content="Used :" FontWeight="Medium" FontSize="11" Margin="0,0,0,0"></Label>
+                            <Label Name="LabelMemory1Used" FontSize="11" Margin="0,0,0,0"></Label>
+                            <Label Content="Total :" FontWeight="Medium" FontSize="11" Margin="0,0,0,0"></Label>
+                            <Label Name="LabelMemory1Total" FontSize="11" Margin="0,0,0,0"></Label>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="LightGray">
+                            <Label Content="Memory2 =>" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Content="Type :" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Name="LabelMemory2Type" FontSize="11" ></Label>
+                            <Label Content="Used :" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Name="LabelMemory2Used" FontSize="11" ></Label>
+                            <Label Content="Total :" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Name="LabelMemory2Total" FontSize="11" ></Label>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="LightGray">
+                            <Label Content="Memory3 =>" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Content="Type :" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Name="LabelMemory3Type" FontSize="11" ></Label>
+                            <Label Content="Used :" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Name="LabelMemory3Used" FontSize="11" ></Label>
+                            <Label Content="Total :" FontWeight="Medium" FontSize="11" ></Label>
+                            <Label Name="LabelMemory3Total" FontSize="11" ></Label>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <Label Content="Mem1 :" FontSize="11" ></Label>
+                            <ComboBox Name="ComboBoxMemory1Type"></ComboBox>
+                            <Label Content="Mem2 :" FontSize="11" ></Label>
+                            <ComboBox Name="ComboBoxMemory2Type"></ComboBox>
+                            <Label Content="Mem3 :" FontSize="11" ></Label>
+                            <ComboBox Name="ComboBoxMemory3Type"></ComboBox>
+                            <Button Name="ButtonSetSMSMemory" Content="Set Memory" Margin="20,0,0,0" Click="ButtonSetSMSMemory_OnClick"></Button>
+                            <Button Name="ButtonReadSMSStats" Content="Read" Margin="5,0,0,0" Click="ButtonReadSMSStats_OnClick"></Button>
+                        </StackPanel>
                     </StackPanel>
                 </TabPanel>
             </TabItem>

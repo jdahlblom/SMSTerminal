@@ -244,6 +244,32 @@ public class ModemManager : IDisposable, IModemInternalListener
         return false;
     }
 
+    public async Task<List<ModemMemory>> ReadModemMemoryStats(string modemId)
+    {
+        foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
+        {
+            var command = new ATSMSMemoryCommand(modem);
+            if (await modem.ExecuteCommand(command))
+            {
+                return command.ModemMemoryList;
+            }
+        }
+        return null;
+    }
+
+    public async Task<List<ModemMemory>> SetModemMemoryUsed(string modemId, ModemMemoryType modemMemoryTypeToUse1, ModemMemoryType modemMemoryTypeToUse2, ModemMemoryType modemMemoryTypeToUse3)
+    {
+        foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
+        {
+            var command = new ATSMSMemoryCommand(modem, modemMemoryTypeToUse1, modemMemoryTypeToUse2, modemMemoryTypeToUse3);
+            if (await modem.ExecuteCommand(command))
+            {
+                return command.ModemMemoryList;
+            }
+        }
+        return null;
+    }
+
     public void CloseTerminals()
     {
         _modems.ForEach(o => o.Dispose());
