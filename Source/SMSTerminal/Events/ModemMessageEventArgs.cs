@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using SMSTerminal.General;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Events;
 

@@ -1,6 +1,7 @@
 ﻿using SMSTerminal.Events;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 using SMSTerminal.PDU;
 using SMSTerminal.SMSMessages;
 
@@ -42,10 +43,10 @@ internal class ATReadSMSCommand : ATCommandBase
                 return CommandProgress.NotExpectedDataReply;
             }
             SetModemDataForCurrentCommand(modemData);
+            SendResultEvent();
 
             if (modemData.HasError)
             {
-                SendResultEvent();
                 return CommandProgress.Error;
             }
 

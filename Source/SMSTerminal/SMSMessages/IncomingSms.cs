@@ -32,11 +32,11 @@ public class IncomingSms : IShortMessageService
     public bool HasBeenRead { get; set; }
     public string Information { get; set; }
     public SMSEncoding SmsEncoding { get; set; }
-    public bool IsStatusReport { get; set; }
+    public bool IsStatusReport { get; init; }
     public DateTimeOffset StatusReportDischargeTimeStamp { get; set; }
     public int StatusReportReference { get; set; }
     public TpStatus StatusReportStatus { get; set; }
-
+    public string FullPDUInformation { get; set; }
 
     public string ExternalName
     {
@@ -97,6 +97,7 @@ public class IncomingSms : IShortMessageService
         }
         return false;
     }
+
 
     private static IncomingSms ConvertToIncomingSms(IModemMessage modemMessage)
     {

@@ -1,8 +1,8 @@
 ﻿using NLog;
 using SMSTerminal.Commands;
 using SMSTerminal.Events;
-using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.PDU;
 using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Modem;
@@ -191,6 +191,16 @@ public class ModemManager : IDisposable, IModemInternalListener
         }
 
         return true;
+    }
+
+    public void ParsePDU(string pdu)
+    {
+        PDUMessageParser.ParseRawModemOutput(pdu);
+    }
+
+    public string DecodePDU(string pdu)
+    {
+        return new PDUDecoder().Decode(null, SMSEncoding._7bit, "079153485002022002000A814000026578321031209500803210312095008000");
     }
 
     public List<string> GetModemList()

@@ -1,6 +1,7 @@
 ﻿using System.IO.Ports;
 using SMSTerminal.Commands;
 using SMSTerminal.General;
+using SMSTerminal.Modem;
 using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Interfaces;

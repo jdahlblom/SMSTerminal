@@ -1,4 +1,4 @@
-﻿namespace SMSTerminal.General;
+﻿namespace SMSTerminal.Modem;
 
 /// <summary>
 /// Logical memory type, depending of how it is used.

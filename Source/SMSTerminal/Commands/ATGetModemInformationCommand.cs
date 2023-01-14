@@ -1,5 +1,6 @@
 ﻿using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
@@ -36,7 +37,7 @@ internal class ATGetModemInformationCommand : ATCommandBase
             }
 
             SetModemDataForCurrentCommand(modemData);
-
+            SendResultEvent();
             if (modemData.HasError)
             {
                 if (CommandIndex == 3)

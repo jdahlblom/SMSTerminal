@@ -27,6 +27,7 @@ public class OutgoingSms : IShortMessageService
         }
     }
     public string ModemTelephone { get; set; }
+    public bool IsStatusReport { get; init; }
     public SMSEncoding SMSEncoding { get; set; } = SMSEncoding._7bit;
     public bool RequestStatusReport { get; set; }
     public SmsDirection Direction => SmsDirection.Outgoing;
@@ -38,6 +39,7 @@ public class OutgoingSms : IShortMessageService
     public string SendingModem { get; set; }
     public int BatchId { get; set; }
     public int Retries { get; set; }
+    public string FullPDUInformation { get; set; }
 
     public void UpRetryCount()
     {

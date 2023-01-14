@@ -1,6 +1,6 @@
 ﻿using SMSTerminal.Commands;
 using SMSTerminal.Events;
-using SMSTerminal.General;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Interfaces;
 

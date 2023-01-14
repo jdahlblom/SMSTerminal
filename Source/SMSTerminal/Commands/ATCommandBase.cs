@@ -1,7 +1,7 @@
 ﻿using NLog;
 using SMSTerminal.Events;
-using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
@@ -25,6 +25,24 @@ internal abstract class ATCommandBase : ICommand
             return ATCommandsList[++CommandIndex];
         }
         return null;
+    }
+
+    public string GetErrors()
+    {
+        var result = "";
+        foreach (var atCommand in ATCommandsList.Where(atCommand => atCommand.ModemData != null))
+        {
+            if (atCommand.ModemData.HasError)
+            {
+                result += $"{atCommand.ModemData.ModemResult}\n";
+            }
+            if (atCommand.ModemData.HasCError)
+            {
+                result += $"{atCommand.ModemData.CErrorMessage}";
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -74,7 +92,16 @@ internal abstract class ATCommandBase : ICommand
     {
         try
         {
-            ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} was successful . {Result} \n\n\n\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, ModemResultEnum.Ok);
+            ModemEventManager.ATCommandEvent(this,
+                Modem.ModemId,
+                ATCommandsList[CommandIndex].ATCommandString,
+                $"Command {CommandType} was successful.",
+                "",
+                ModemEventType.ATCommand,
+                ModemResultEnum.Ok);
+                /*ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} was successful . {Result} \n" +
+                                                              $"\n----------------------------\\n\n{ATCommandsList[CommandIndex].ModemData.Data}",
+                ModemEventType.ModemComms, Modem.ModemId, ModemResultEnum.Ok);*/
         }
         catch (Exception e)
         {
@@ -87,14 +114,23 @@ internal abstract class ATCommandBase : ICommand
         try
         {
             var modemData = ATCommandsList[CommandIndex].ModemData;
+            ModemEventManager.ATCommandEvent(this,
+                Modem.ModemId,
+                ATCommandsList[CommandIndex].ATCommandString,
+                $"Command {CommandType} failed.",
+                GetErrors(),
+                ModemEventType.ATCommand,
+                Result);
+
             if (modemData.HasCError)
             {
-                ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} resulted in {modemData.CErrorMessage}\n\n\n\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
+                //ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString} resulted in {modemData.CErrorMessage}\n----------------------------\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
             }
             else
             {
-                ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString}  resulted in error. {Result}\n\n\n\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
+                //ModemEventManager.ModemEvent(this, Modem.ModemId, $"{CommandType} => {ATCommandsList[CommandIndex].ATCommandString}  resulted in error. {Result}\n----------------------------\n{ATCommandsList[CommandIndex].ModemData.Data}", ModemEventType.ModemComms, Modem.ModemId, modemData.ModemResult);
             }
+            Logger.Error($"{Modem} : Command {CommandType} failed.\nAT command = {ATCommandsList[CommandIndex].ATCommandString}\n{GetErrors()}");
         }
         catch (Exception e)
         {

@@ -1,4 +1,4 @@
-﻿namespace SMSTerminal.General;
+﻿namespace SMSTerminal.Modem;
 
 /// <summary>
 /// Delays and timeouts used throughout the application.
@@ -27,7 +27,7 @@ public static class ModemTimings
     /// After writing PDU the modem can be slow to respond.
     /// </summary>
     public static int ModemWriteTimeout { get; set; } = 5000;
-        
+
     /// <summary>
     /// Modem can take quite a bit of time (!) before being up again after this command
     /// </summary>
@@ -38,14 +38,14 @@ public static class ModemTimings
     /// when sending SMS to complete.
     /// </summary>
     public static int ModemReplyWait { get; set; } = 15000;
-        
+
     /// <summary>
     /// The wait time for a ModemDataMessage from the Channel.
     /// Since the response from  the modem can be slow this
     /// must be high enough.
     /// </summary>
     public static int ChannelReadWait { get; set; } = 400;
-        
+
     /// <summary>
     /// CSMS, orphaned concatenated SMS that are fragmented will
     /// be deleted after this period.

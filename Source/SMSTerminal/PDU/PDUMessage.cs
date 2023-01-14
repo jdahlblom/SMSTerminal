@@ -8,9 +8,31 @@ namespace SMSTerminal.PDU;
 /// This is the message as received from the modem. Use ToString()
 /// to see all field information.
 /// </summary>
-internal class PDUMessage : IModemMessage
+public class PDUMessage : IShortMessageService
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    public string MessageId { get; set; }
+    /// <summary>
+    /// Can be set to any database id and
+    /// used for either receiver or sender.
+    /// </summary>
+    public int ContactId { get; set; }
+    public string SenderName { get; set; }
+    public string SenderTelephone { get; set; }
+    public string ReceiverTelephone { get; set; }
+    public string ReceiverName { get; }
+    public DateTime DateCreated => DateReceived.Date;
+    public SmsDirection Direction { get; }
+
+    public SMSEncoding SMSEncoding
+    {
+        get => PDUDataCodingScheme.SMSEncoding;
+        set => PDUDataCodingScheme.SMSEncoding = value;
+    }
+
+    public bool ContainsSearchString(string searchString);
+    public string FullPDUInformation { get; set; }
 
     private string _unDecodedMessage;
     private string _readableMessage;
@@ -25,12 +47,16 @@ internal class PDUMessage : IModemMessage
     public bool HasBeenConcatenated { get; set; }
     public int StatusReportReference { get; set; }
     public TpStatus StatusReportStatus { get; set; } = TpStatus.TP_STATUS_NONE;
-    public DateTimeOffset DateSent => PDUTimeStamp.GetDateTimeOffset();
+    public DateTimeOffset DateSentOffset => PDUTimeStamp.GetDateTimeOffset();
+    public DateTime DateSent => DateSentOffset.Date;
     public DateTimeOffset DateReceived { get; set; }
     public string RawMessage { get; set; } = "";
     public List<int> MemorySlots { get; set; } = new();
+    public bool IsStatusReport
+    {
+        get { return PDUHeader.SmsMessageType == SMSMessageType.SMS_STATUS_REPORT; }
+    }
 
-    public bool IsStatusReport => PDUHeader.SmsMessageType == SMSMessageType.SMS_STATUS_REPORT;
     public bool IsCMS => PDUUserDataHeader != null && PDUUserDataHeader.ContainsConcatenationInformationElement;
     /// <summary>
     /// After this period message can be deleted. Probably an orphan CSMS.
@@ -111,10 +137,6 @@ internal class PDUMessage : IModemMessage
     {
         get
         {
-            /*if(string.IsNullOrEmpty(_unDecodedMessage))
-            {
-                return null;
-            }*/
             if (PDUUserDataHeader != null && PDUUserDataHeader.ContainsNotSupportedInformationElements())
             {
                 //Do not return binary information or information meant to be read by machines.

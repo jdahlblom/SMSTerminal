@@ -5,6 +5,8 @@ using NLog;
 using SMSTerminal.Events;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.PDU;
+using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Modem;
 
@@ -17,6 +19,8 @@ namespace SMSTerminal.Modem;
 /// b) single incomplete message
 /// c) several not related messages where last
 /// message can be complete or incomplete.
+///
+/// Consider it a "ticker tape cutter".
 /// </summary>
 internal class OutputParser : IOutputParser
 {
@@ -79,6 +83,17 @@ internal class OutputParser : IOutputParser
                     if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting)
                     {
                         ModemEventManager.ModemInternalEvent(this, _modem.ModemId, modemData.ModemResult, modemData.ModemDataClass, modemData.Data);
+                    }
+                    else if (modemData.ModemDataClass == ModemDataClassEnum.NewStatusReport)
+                    {
+                        if (SmsFunctions.StatusReportCDSIsComplete(modemData.Data, out var cdsData))
+                        {
+                            var readMessages = PDUMessageParser.ParseRawModemOutput(cdsData);
+                            foreach (var modemMessage in readMessages)
+                            {
+                                ModemEventManager.NewSMSEvent(this,(IncomingSms.Convert(modemMessage)), modemMessage);
+                            }
+                        }
                     }
                     else
                     {

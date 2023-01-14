@@ -19,7 +19,7 @@ namespace SMSWindow;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSListener
+public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSListener, IATCommandListener
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private GsmModemConfig _gsmModemConfig = new();
@@ -35,6 +35,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
 
         ModemEventManager.AttachNewSMSListener(this);
         ModemEventManager.AttachModemEventListener(this);
+        ModemEventManager.AttachATEventListener(this);
 
         _gsmModemConfig.BaudRate = BaudRate.Baudrate115200;
         _gsmModemConfig.ComPort = "COM4";
@@ -56,6 +57,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     {
         ModemEventManager.DetachNewSMSListener(this);
         ModemEventManager.DetachModemEventListener(this);
+        ModemEventManager.DetachATEventListener(this);
         _modemManager?.Dispose();
     }
 
@@ -92,9 +94,33 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
 
     public void NewSMSEvent(object sender, SMSReceivedEventArgs e)
     {
-        //var message = $"-------------------------------------\n{e.ShortMessageService.ToString()}<-";
-        var message = $"-------------------------------------\n[{e.ShortMessageService.SenderTelephone}](chars:{e.ShortMessageService.Message.Length})\n->{e.ShortMessageService.Message}<-";
+        var message = "";
+        if (e.ShortMessageService.IsStatusReport)
+        {
+            message = $"-------------------------------------\n[{e.ShortMessageService.SenderTelephone}]" +
+                          $"(chars:{e.ShortMessageService.Message.Length})\n->{e.ShortMessageService.Message}<-\n------------------------\n" +
+                          $"{e.ModemMessage ShortMessageService.RawPDUInformation}";
+        }
+        else
+        {
+            message = $"-------------------------------------\n[{e.ShortMessageService.SenderTelephone}]" +
+                          $"(chars:{e.ShortMessageService.Message.Length})\n->{e.ShortMessageService.Message}<-";
+        }
         Dispatcher?.BeginInvoke((Action)(() => TextBoxIncomingSMS.Text = TextBoxIncomingSMS.Text + Environment.NewLine + message));
+    }
+    
+    public void ATCommandEvent(object sender, ATCommandEventArgs e)
+    {
+        if (e.ResultStatus.ContainsError())
+        {
+            var message = $"-------------------------------------\n{e.ModemId} : {e.Message} {e.ResultStatus} {e.ErrorMessage}";
+            Dispatcher?.BeginInvoke((Action)(() => TextBoxErrors.Text = TextBoxErrors.Text + Environment.NewLine + message));
+        }
+        else
+        {
+            var message = $"-------------------------------------\n{e.ModemId} : {e.Message} {e.ResultStatus}";
+            Dispatcher?.BeginInvoke((Action)(() => TextBoxModemLog.Text = TextBoxModemLog.Text + Environment.NewLine + message));
+        }
     }
 
     private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
@@ -504,6 +530,11 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
 
     private void SetMemoryInformation(List<ModemMemory> modemMemoryList)
     {
+        if (modemMemoryList == null)
+        {
+            return;
+        }
+
         LabelMemory1Type.Content = modemMemoryList[0].MemoryType;
         LabelMemory1Used.Content = modemMemoryList[0].MemoryInUse;
         LabelMemory1Total.Content = modemMemoryList[0].MemoryTotal;
@@ -522,5 +553,17 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         ComboBoxMemory3Type.ItemsSource = null;
         ComboBoxMemory3Type.ItemsSource = modemMemoryList[2].MemoryTypesAvailable;
         ComboBoxMemory3Type.SelectedValue = modemMemoryList[2].MemoryType;
+    }
+
+    private void ButtonDev_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
     }
 }

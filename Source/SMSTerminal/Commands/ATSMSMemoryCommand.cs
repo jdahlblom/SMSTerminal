@@ -150,8 +150,7 @@ internal class ATSMSMemoryCommand : ATCommandBase
 
         memory = memory[(memory.IndexOf(':') + 1)..];
         memory = memory[..memory.IndexOf('\r')];
-
-        //(\"ME\",\"SM\",\"MT\"),(\"ME\",\"SM\",\"MT\"),(\"SM\",\"MT\")
+        
         var insideGroup = false;
         var insideMemory = false;
         var memoryTypeIndex = 0;

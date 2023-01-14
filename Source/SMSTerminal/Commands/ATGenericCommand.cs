@@ -1,5 +1,5 @@
-﻿using SMSTerminal.General;
-using SMSTerminal.Interfaces;
+﻿using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 

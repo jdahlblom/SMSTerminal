@@ -1,6 +1,7 @@
 using System.IO.Ports;
+using SMSTerminal.General;
 
-namespace SMSTerminal.General;
+namespace SMSTerminal.Modem;
 
 /// <summary>
 /// Holds basic serial port and modem configurations.

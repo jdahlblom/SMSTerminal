@@ -1,4 +1,7 @@
-﻿using SMSTerminal.PDU;
+﻿using System.Net.NetworkInformation;
+using System.Text;
+using System.Text.RegularExpressions;
+using SMSTerminal.PDU;
 
 namespace SMSTerminal.General;
 
@@ -89,5 +92,19 @@ public static class SmsFunctions
         }
 
         return result;
+    }
+
+    public static bool StatusReportCDSIsComplete(string data, out string cdsData)
+    {
+        cdsData = "";
+        if (data == null || !data.Contains(ATMarkers.NewStatusReportArrived)) return false;
+
+        //"\r\r+CDS: 24\r\r<pdu>\r\r\rAT+CMGF=0;+CMGS=39\r\r\r\r\r\r\r\r>"
+        var regex = new Regex(@"^(\s*?)\+CDS: (\d{1,}\s{1,}[0-9 A-F]{10,}[\r]{1,})", RegexOptions.None);
+        if (regex.IsMatch(data))
+        {
+            cdsData = regex.Matches(data)[0].Value;
+        }
+        return regex.IsMatch(data);
     }
 }

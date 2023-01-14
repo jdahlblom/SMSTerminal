@@ -112,6 +112,7 @@
                             <Button Name="ButtonSettings" Content="Settings" Height="22" Margin="0,5,10,5" Click="ButtonSettings_OnClick" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Name="ButtonDev" Content="Dev" Height="22" Margin="0,5,10,5" Click="ButtonDev_OnClick" />
                             <Button Name="ButtonErrorCommand" Content="Error Command" Height="22" Margin="0,5,10,5" Click="ButtonErrorCommand_OnClick" />
                             <Button Name="ButtonRestartModem" Content="Restart Modem" Height="22" Margin="0,5,10,5" Click="ButtonRestartModem_OnClick" />
                         </StackPanel>
@@ -127,8 +128,8 @@
                 <TabPanel>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Label Content="AT Command:" Margin="10,10,0,0"></Label>
-                        <TextBox Name="TextBoxATCommand" Margin="10,10,0,0" Width="200" TextChanged="TextBox_OnTextChanged" KeyDown="TextBoxATCommand_OnKeyDown"></TextBox>
-                        <Button Name="ButtonExecuteATCommand" Margin="10,10,0,0" Content="Execute" Click="ButtonExecuteATCommand_OnClick"></Button>
+                        <TextBox Name="TextBoxATCommand" Height="22" Margin="10,10,0,0" Width="200" TextChanged="TextBox_OnTextChanged" KeyDown="TextBoxATCommand_OnKeyDown"></TextBox>
+                        <Button Name="ButtonExecuteATCommand" Height="22" Margin="10,10,0,0" Content="Execute" Click="ButtonExecuteATCommand_OnClick"></Button>
                     </StackPanel>
                 </TabPanel>
             </TabItem>

@@ -1,5 +1,6 @@
 ﻿using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 using SMSTerminal.PDU;
 using SMSTerminal.SMSMessages;
 

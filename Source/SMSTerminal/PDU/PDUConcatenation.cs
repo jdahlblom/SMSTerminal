@@ -110,6 +110,7 @@ internal class PDUConcatenation
                 finalMessage.Message = stringBuilderMessage.ToString();
                 finalMessage.RawMessage = stringBuilderRawMessage.ToString();
                 finalMessage.HasBeenConcatenated = true;
+                finalMessage.RawPDUInformation = finalMessage.ToString();
                 completeMessages.Add(finalMessage);
                 messageRefsToDelete.Add(finalMessage.MessageReference);
             }

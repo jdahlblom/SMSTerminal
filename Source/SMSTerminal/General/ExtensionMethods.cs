@@ -29,9 +29,9 @@ public static class ExtensionMethods
             case ModemResultEnum.Ok:
                 return false;
             default:
-            {
-                throw new Exception($"ModemResultEnum : {modemResultEnum} isn't implemented.");
-            }
+                {
+                    throw new Exception($"ModemResultEnum : {modemResultEnum} isn't implemented.");
+                }
         }
     }
 
@@ -94,7 +94,8 @@ public static class ExtensionMethods
     {
         if (string.IsNullOrEmpty(message)) return false;
 
-        return ATMarkers.NewMessageMarkerList.Any(s => message.Contains(s)) ||
+        return SmsFunctions.StatusReportCDSIsComplete(message, out _) || 
+               ATMarkers.NewMessageMarkerList.Any(message.Contains) ||
                ATCommands.ContainsResultCode(message) ||
                message.Contains(ATMarkers.ReadyPrompt);
     }

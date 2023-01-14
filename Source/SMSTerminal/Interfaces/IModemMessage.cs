@@ -20,5 +20,6 @@ public interface IModemMessage
     DateTimeOffset StatusReportDischargeTimeStamp { get; }
     TpStatus StatusReportStatus { get; }
     bool DeletedFromTA { get; set; }
+    public string FullPDUInformation { get; set; }
     string ToString();
 }
