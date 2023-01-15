@@ -6,13 +6,13 @@ namespace SMSTerminal.Commands;
 /// <summary>
 /// Generic Command used to execute ad-hoc AT commands.
 /// </summary>
-internal class ATGenericCommand : ATCommandBase
+internal class ATGenericCommand : ATCommand
 {
     public ATGenericCommand(IModem modem, string atCommand, string terminationString)
     {
         Modem = modem;
         CommandType = "[AT Generic Command]";
-        var command = new ATCommand(atCommand, terminationString);
+        var command = new ATCommandLine(atCommand, terminationString);
         ATCommandsList.Add(command);
     }
 

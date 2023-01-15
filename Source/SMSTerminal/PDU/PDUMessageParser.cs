@@ -1,9 +1,7 @@
 ﻿using NLog;
-using SMSTerminal.Commands;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
 using SMSTerminal.Modem;
-using System.Linq;
 using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.PDU;
@@ -14,7 +12,6 @@ namespace SMSTerminal.PDU;
 internal static class PDUMessageParser
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static readonly object LockParseRawModemOutput = new();
     private static readonly object LockParseSingleRaw = new();
     private static readonly object LockParseIncomingStatusReport = new();
     private static readonly object LockParseIncomingSms = new();
@@ -23,7 +20,7 @@ internal static class PDUMessageParser
     /// Used to add modem tph info to incoming SMS. So as to know
     /// which modem received it.
     /// </summary>
-    public static string ModemTelephone { get; set; } = "";
+    public static string ModemTelephone { get; set; }= "";
 
     private static List<PDUMessage> _fragmentCSMSMessages = new();
     public static List<PDUMessage> FragmentCSMSMessages => _fragmentCSMSMessages;
@@ -38,11 +35,10 @@ internal static class PDUMessageParser
             }
         }
     }
-    //079153485002022002000A814000026578321031209500803210312095008000
+
     internal static List<IModemMessage> ParseRawModemOutput(string rawModemOutput)
     {
         //AT+CMGF=0;+CMGL=4\r\n+CMGL: 1,1,"",159\r\n<PDU>\r\n\r\n\r\nOK\r\n
-        //"+CDS: 24\r\r<pdu>\r\r"
 
         /*
             This is how the raw output from the modem looks. A long SMS can be spread out over 
@@ -61,75 +57,66 @@ internal static class PDUMessageParser
 
             OK
 
-            <status report>
-            +CDS: 24
-            <pdu>
 
          */
 
 
-        lock (LockParseRawModemOutput)
+        //"AT+CMGF=0;+CMGL=0;+CMGL=1\r\r+CMGL: 1,1,\"\",23\r\r<pdu>\r\r\r\rOK\r\r"
+        //"\r\r+CDS: 24\r\r\r\r<pdu>"
+
+        var incomingPDUMessages = new List<PDUMessage>();
+
+        if (rawModemOutput.Contains(ATCommands.ATReadUnreadSms) || rawModemOutput.Contains(ATCommands.ATReadReadSms))
         {
-            //"AT+CMGF=0;+CMGL=0;+CMGL=1\r\r+CMGL: 1,1,\"\",23\r\r<pdu>\r\r\r\rOK\r\r"
-            //"\r\r+CDS: 24\r\r\r\r<pdu>"
+            ATCommands.RemoveSMSReadCommand(ref rawModemOutput);
 
-            var incomingPDUMessages = new List<PDUMessage>();
+            rawModemOutput = rawModemOutput.Replace(ATMarkers.OkReply, "");
 
-            if (rawModemOutput.Contains(ATCommands.ATReadUnreadSms) || rawModemOutput.Contains(ATCommands.ATReadReadSms))
+            rawModemOutput = rawModemOutput.Trim();
+            rawModemOutput = rawModemOutput.Replace(ATMarkers.MemoryStorage, $"@@@@@{ATMarkers.MemoryStorage}");
+
+
+            var array = rawModemOutput.Split(new[] { "@@@@@" }, StringSplitOptions.RemoveEmptyEntries);
+            array.TrimEntries();
+
+            foreach (var s in array)
             {
-                ATCommands.RemoveSMSReadCommand(ref rawModemOutput);
-
-                rawModemOutput = rawModemOutput.Replace(ATMarkers.OkReply, "");
-
-                rawModemOutput = rawModemOutput.Trim();
-                rawModemOutput = rawModemOutput.Replace(ATMarkers.MemoryStorage, $"@@@@@{ATMarkers.MemoryStorage}");
-
-
-                var array = rawModemOutput.Split(new[] { "@@@@@" }, StringSplitOptions.RemoveEmptyEntries);
-                array.TrimEntries();
-
-                foreach (var s in array)
-                {
-                    //Logger.Debug("About to parse ->{0}<-", s);
-                    try
-                    {
-                        var pduModemMessage = ParseSingleRaw(s);
-                        pduModemMessage.ModemTelephone = ModemTelephone;
-                        incomingPDUMessages.Add(pduModemMessage);
-                    }
-                    catch (Exception e)
-                    {
-                        //todo UGLY AS HELL
-                        Logger.Error("Parse failed for raw modem data : ->{0}<-\n\n{1}", s, e.DecodeException());
-                    }
-                }
-            }
-            else if (rawModemOutput.Contains(ATMarkers.NewStatusReportArrived))
-            {
+                //Logger.Debug("About to parse ->{0}<-", s);
                 try
                 {
-                    var pduModemMessage = ParseSingleRaw(rawModemOutput);
+                    var pduModemMessage = ParseSingleRaw(s);
                     pduModemMessage.ModemTelephone = ModemTelephone;
                     incomingPDUMessages.Add(pduModemMessage);
                 }
                 catch (Exception e)
                 {
                     //todo UGLY AS HELL
-                    Logger.Error("Parse failed for raw modem data : ->{0}<-\n\n{1}", rawModemOutput, e.DecodeException());
+                    Logger.Error("Parse failed for raw modem data : ->{0}<-\n\n{1}", s, e.DecodeException());
                 }
             }
-
-            List<PDUMessage> completePDUMessages = new();
-            new PDUConcatenation().SortMessages(incomingPDUMessages, ref completePDUMessages, ref _fragmentCSMSMessages);
-            return completePDUMessages.ForEach(o => IncomingSms.Convert(o)).ToList();
         }
+        else if (rawModemOutput.Contains(ATMarkers.NewStatusReportArrived))
+        {
+            try
+            {
+                var pduModemMessage = ParseSingleRaw(rawModemOutput);
+                pduModemMessage.ModemTelephone = ModemTelephone;
+                incomingPDUMessages.Add(pduModemMessage);
+            }
+            catch (Exception e)
+            {
+                //todo UGLY AS HELL
+                Logger.Error("Parse failed for raw modem data : ->{0}<-\n\n{1}", rawModemOutput, e.DecodeException());
+            }
+        }
+
+        List<PDUMessage> completePDUMessages = new();
+        new PDUConcatenation().SortMessages(incomingPDUMessages, ref completePDUMessages, ref _fragmentCSMSMessages);
+        return completePDUMessages.Cast<IModemMessage>().ToList();
     }
 
     private static PDUMessage ParseSingleRaw(string rawMessage)
     {
-        //"+CMGL: 1,0,\"\",23\r\r<pdu>"
-        //"+CDS: 24\r\r<pdu>\r\r"
-
         lock (LockParseSingleRaw)
         {
             var pduModemMessage = new PDUMessage(DateTimeOffset.Now, rawMessage, ModemTimings.CSMSMaxAgeMilliSecs);
@@ -281,7 +268,7 @@ internal static class PDUMessageParser
              *  PDU TIMESTAMP WHEN SC DELIVERED OR TRIED TO DELIVER OR DISPOSED THE PREVIOUS SMS
              */
             var pduTimeStampDischarge = new PDUTimeStamp(pduAfterPDUHeader[..14]);
-            pduModemMessage.PDUStatusReportSmsDischargeTimeStamp = pduTimeStampDischarge;
+            pduModemMessage.PDUStatusReportSMSDischargeTimeStamp = pduTimeStampDischarge;
             //Logger.Debug("pduTimeStampDischarge {0}", pduTimeStampDischarge);
             pduAfterPDUHeader = pduAfterPDUHeader[14..];
             //Logger.Debug("userPduSubStringed 5 {0}", userPduSubStringed);
@@ -349,7 +336,7 @@ internal static class PDUMessageParser
             pduAfterPDUHeader = pduAfterPDUHeader[2..];
             //Logger.Debug("userPduSubStringed 4i {0}", userPduSubStringed);
             /*
-             *  PDU TIMESTAMP
+             *  PDU TIMESTAMP (Service Centre Time Stamp)
              */
             var pduTimeStamp = new PDUTimeStamp(pduAfterPDUHeader[..14]);
             pduModemMessage.PDUTimeStamp = pduTimeStamp;
@@ -359,7 +346,7 @@ internal static class PDUMessageParser
             /*
              * USER DATA LENGTH 
              */
-            var userDataLength = Convert.ToByte(pduAfterPDUHeader[..2], 16);
+            //var userDataLength = Convert.ToByte(pduAfterPDUHeader[..2], 16);
             //Logger.Debug("userDataLength {0}", userDataLength);
             pduAfterPDUHeader = pduAfterPDUHeader[2..];
             //Logger.Debug("userPduSubStringed 6i {0}", userPduSubStringed);

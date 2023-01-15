@@ -1,5 +1,6 @@
 ﻿using SMSTerminal.Commands;
 using SMSTerminal.Events;
+using SMSTerminal.General;
 using SMSTerminal.Modem;
 
 namespace SMSTerminal.Interfaces;
@@ -30,7 +31,7 @@ internal interface ICommand
     /// Retrieves AT command command index is pointing at.
     /// Calling NextATCommand will increase command index.
     /// </summary>
-    ATCommand CurrentATCommand { get; }
+    ATCommandLine CurrentATCommand { get; }
 
     /// <summary>
     /// Once this has been called also CurrentATCommand
@@ -38,7 +39,7 @@ internal interface ICommand
     /// increased by 1.
     /// </summary>
     /// <returns>next AT command</returns>
-    ATCommand NextATCommand();
+    ATCommandLine NextATCommand();
 
     /// <summary>
     /// This is the final result of the command

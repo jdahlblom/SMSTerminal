@@ -99,7 +99,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         {
             message = $"-------------------------------------\n[{e.ShortMessageService.SenderTelephone}]" +
                           $"(chars:{e.ShortMessageService.Message.Length})\n->{e.ShortMessageService.Message}<-\n------------------------\n" +
-                          $"{e.ModemMessage ShortMessageService.RawPDUInformation}";
+                          $"{e.ShortMessageService.FullPDUInformation}";
         }
         else
         {

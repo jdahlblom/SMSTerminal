@@ -7,7 +7,7 @@ namespace SMSTerminal.Commands;
 /// <summary>
 /// Retrieves information about modem & SIM.
 /// </summary>
-internal class ATGetModemInformationCommand : ATCommandBase
+internal class ATGetModemInformationCommand : ATCommand
 {
     public string Manufacturer { get; private set; }
     public string Model { get; private set; }
@@ -18,10 +18,10 @@ internal class ATGetModemInformationCommand : ATCommandBase
     {
         Modem = modem;
         CommandType = "[Get Modem Information Command]";
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetModemManufacturerCommand,ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetModemModelCommand, ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetIMSICommand, ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetICCIDCommand, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetModemManufacturerCommand,ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetModemModelCommand, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetIMSICommand, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetICCIDCommand, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

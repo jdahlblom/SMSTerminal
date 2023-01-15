@@ -8,13 +8,13 @@ namespace SMSTerminal.Commands;
 /// Enables verbose errors for CME, CMS errors instead
 /// of just reporting the error number.
 /// </summary>
-internal class ATSetVerboseErrorsCommand : ATCommandBase
+internal class ATSetVerboseErrorsCommand : ATCommand
 {
     public ATSetVerboseErrorsCommand(IModem modem)
     {
         Modem = modem;
         CommandType = "[Set Verbose Errors Command]";
-        var command = new ATCommand(ATCommands.UseVerboseErrorsCommand, ATCommands.ATEndPart);
+        var command = new ATCommandLine(ATCommands.UseVerboseErrorsCommand, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

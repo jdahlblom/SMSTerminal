@@ -10,17 +10,11 @@ public static class ATMarkers
     public const string NewSMSArrivedSM = "+CMTI: \"SM\""; //This comes when there is new SMS. (unsolicited message)
     public const string NewSMSArrivedMT = "+CMTI: \"MT\""; //This comes when there is new SMS. (unsolicited message)
     public const string NewSMSArrivedME = "+CMTI: \"ME\""; //This comes when there is new SMS. (unsolicited message)
-    public const string NewStatusReportArrivedSR = "+CDSI: \"SR\""; //This comes when there is a new Status Report. (unsolicited message)
-    public const string NewStatusReportArrivedSM = "+CDSI: \"SM\""; //This comes when there is a new Status Report. (unsolicited message)
-    public const string NewStatusReportArrivedMT = "+CDSI: \"MT\""; //This comes when there is a new Status Report. (unsolicited message)
-    public const string NewStatusReportArrivedME = "+CDSI: \"ME\""; //This comes when there is a new Status Report. (unsolicited message)
     public const string NewStatusReportArrived = "+CDS:"; //This comes when there is a new Status Report. (unsolicited message)
     public static readonly List<string> NewMessageMarkerList = new()
     {
         NewSMSArrivedSM, NewSMSArrivedMT, 
-        NewSMSArrivedME, NewStatusReportArrivedSR, 
-        NewStatusReportArrivedSM, NewStatusReportArrivedMT, 
-        NewStatusReportArrivedME
+        NewSMSArrivedME
     };
     //***********************************************************************
     public const string SMSDeleted = "AT+CMGD="; //This comes when there SMS has been deleted todo memory slot information

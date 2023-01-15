@@ -8,13 +8,13 @@ namespace SMSTerminal.Commands;
 /// Command used to deliberately cause error on the modem side.
 /// Used to see application behaviour.
 /// </summary>
-internal class ATErrorCommand : ATCommandBase
+internal class ATErrorCommand : ATCommand
 {
     public ATErrorCommand(IModem modem)
     {
         Modem = modem;
         CommandType = "[AT Error Command]";
-        var command = new ATCommand(ATCommands.ATForceError, ATCommands.ATEndPart);
+        var command = new ATCommandLine(ATCommands.ATForceError, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

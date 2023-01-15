@@ -97,11 +97,11 @@ public static class ModemEventManager
     /// <summary>
     /// Used when new SMS has been read
     /// </summary>
-    public static void NewSMSEvent(object sender, IShortMessageService shortMessageService, IModemMessage modemMessage)
+    public static void NewSMSEvent(object sender, IShortMessageService shortMessageService)
     {
         OnNewSMSEvent?.Invoke(sender, new SMSReceivedEventArgs
         {
-            ShortMessageService = shortMessageService, ModemMessage = modemMessage
+            ShortMessageService = shortMessageService
         });
     }
 

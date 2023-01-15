@@ -8,13 +8,13 @@ namespace SMSTerminal.Commands;
 /// Simple AT "ping" command to see that the
 /// modem is up and running.
 /// </summary>
-internal class ATQueryCommand : ATCommandBase
+internal class ATQueryCommand : ATCommand
 {
     public ATQueryCommand(IModem modem)
     {
         Modem = modem;
         CommandType = "[AT Test Command]";
-        var command = new ATCommand(ATCommands.ATQueryCommand, ATCommands.ATEndPart);
+        var command = new ATCommandLine(ATCommands.ATQueryCommand, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

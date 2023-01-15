@@ -16,7 +16,7 @@ namespace SMSTerminal.Commands;
 /// MT = sum of "SM" and "ME" storage
 /// Varies depending on modem.
 /// </summary>
-internal class ATSMSMemoryCommand : ATCommandBase
+internal class ATSMSMemoryCommand : ATCommand
 {
     private readonly MemoryCommandMode _memoryCommandMode;
     public readonly ModemMemory Memory1 = new() { StorageType = ModemStorageType.Memory1 };
@@ -38,8 +38,8 @@ internal class ATSMSMemoryCommand : ATCommandBase
         SetLists();
         _memoryCommandMode = MemoryCommandMode.GetMemoryInformation;
         CommandType = "[AT SMS Memory Command]";
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetAvailableMemoryTypes, ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetChosenMemoryUsage, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetAvailableMemoryTypes, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetChosenMemoryUsage, ATCommands.ATEndPart));
     }
 
     public ATSMSMemoryCommand(IModem modem, ModemMemoryType memory1TypeToUse, ModemMemoryType memory2TypeToUse, ModemMemoryType memory3TypeToUse)
@@ -48,9 +48,9 @@ internal class ATSMSMemoryCommand : ATCommandBase
         SetLists();
         _memoryCommandMode = MemoryCommandMode.SetMemoryTypesUsed;
         CommandType = "[AT SMS Memory Command]";
-        ATCommandsList.Add(new ATCommand(ATCommands.ATSetMemoryTypesUsed + $"\"{memory1TypeToUse}\",\"{memory2TypeToUse}\",\"{memory3TypeToUse}\"", ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetAvailableMemoryTypes, ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommand(ATCommands.ATGetChosenMemoryUsage, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATSetMemoryTypesUsed + $"\"{memory1TypeToUse}\",\"{memory2TypeToUse}\",\"{memory3TypeToUse}\"", ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetAvailableMemoryTypes, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetChosenMemoryUsage, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

@@ -7,7 +7,7 @@ namespace SMSTerminal.Commands;
 /// <summary>
 /// Handles PIN operations, checks status and applies PIN1 if necessary.
 /// </summary>
-internal class ATSetPINCommand : ATCommandBase
+internal class ATSetPINCommand : ATCommand
 {
     private string PIN1Code { get; }
     public bool PINCodeSet { get; private set; }
@@ -17,8 +17,8 @@ internal class ATSetPINCommand : ATCommandBase
         Modem = modem;
         PIN1Code = pinCode;
         CommandType = "[Set PIN Command]";
-        var command = new ATCommand(ATCommands.ATPINStatusQueryCommand, ATCommands.ATEndPart);
-        var command2 = new ATCommand(ATCommands.ATPINAuthCommand + PIN1Code, ATCommands.ATEndPart);
+        var command = new ATCommandLine(ATCommands.ATPINStatusQueryCommand, ATCommands.ATEndPart);
+        var command2 = new ATCommandLine(ATCommands.ATPINAuthCommand + PIN1Code, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
         ATCommandsList.Add(command2);
     }

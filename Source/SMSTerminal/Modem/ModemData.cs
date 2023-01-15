@@ -7,7 +7,7 @@ namespace SMSTerminal.Modem;
 public enum ModemDataClassEnum
 {
     None,
-    NewSMSWaiting,
+    NewSMS,
     NewStatusReport,
     UnknownModemData
 }
@@ -59,7 +59,7 @@ internal class ModemData
              */
             if (ATMarkers.NewMessageMarkerList.Any(Data.Contains))
             {
-                ModemDataClass = ModemDataClassEnum.NewSMSWaiting;
+                ModemDataClass = ModemDataClassEnum.NewSMS;
             }
             if (Data.Contains(ATMarkers.NewStatusReportArrived))
             {

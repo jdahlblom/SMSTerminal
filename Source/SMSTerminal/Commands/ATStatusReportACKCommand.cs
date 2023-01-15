@@ -5,15 +5,16 @@ using SMSTerminal.Modem;
 namespace SMSTerminal.Commands;
 
 /// <summary>
-/// This speeds up SMS execution.
+/// Simple AT "ping" command to see that the
+/// modem is up and running.
 /// </summary>
-internal class ATKeepSMSRelayLinkOpen : ATCommand
+internal class ATStatusReportACKCommand : ATCommand
 {
-    public ATKeepSMSRelayLinkOpen(IModem modem)
+    public ATStatusReportACKCommand(IModem modem)
     {
         Modem = modem;
-        CommandType = "[AT SMS Relay Link Command]";
-        var command = new ATCommandLine(ATCommands.ATKeepSMSRelayLinkOpen, ATCommands.ATEndPart);
+        CommandType = "[AT ACK New Message Command]";
+        var command = new ATCommandLine(ATCommands.ATSMSStatusReportACK, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

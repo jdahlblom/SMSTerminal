@@ -16,7 +16,7 @@ public enum SMSReadStatus
 /// <summary>
 /// Reads and parses SMS from the modem.
 /// </summary>
-internal class ATReadSMSCommand : ATCommandBase
+internal class ATReadSMSCommand : ATCommand
 {
     private readonly string _readCommandString;
 
@@ -28,7 +28,7 @@ internal class ATReadSMSCommand : ATCommandBase
         _readCommandString = smsReadStatus == SMSReadStatus.Read
             ? ATCommands.ATReadReadSms
             : ATCommands.ATReadUnreadSms;
-        ATCommandsList.Add(new ATCommand(_readCommandString, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(_readCommandString, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)
@@ -63,12 +63,20 @@ internal class ATReadSMSCommand : ATCommandBase
                      */
                     foreach (var modemMessage in readCompleteMessages)
                     {
-                        ModemEventManager.NewSMSEvent(this, IncomingSms.Convert(modemMessage), modemMessage);
+                        var incomingSMS = IncomingSms.Convert(modemMessage);
+                        if (incomingSMS.IsStatusReport)
+                        {
+                            /*
+                             * Must confirm that report has been received.
+                             */
+                            ATCommandsList.Add(new ATCommandLine(ATCommands.ATSMSStatusReportACK, ATCommands.ATEndPart)); 
+                        }
+                        ModemEventManager.NewSMSEvent(this, incomingSMS);
+
                         if (!Modem.GsmModemConfig.DeleteSMSFromModemWhenRead) break;
                         foreach (var i in modemMessage.MemorySlots)
                         {
-                            ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i,
-                                ATCommands.ATEndPart, i));
+                            ATCommandsList.Add(new ATCommandLine(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i));
                         }
                     }
                 }
@@ -83,7 +91,7 @@ internal class ATReadSMSCommand : ATCommandBase
                     if (fragmentCSMSMessage.DeletedFromTA) continue;
                     foreach (var i in fragmentCSMSMessage.MemorySlots)
                     {
-                        ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i, "Fragment"));
+                        ATCommandsList.Add(new ATCommandLine(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i, "Fragment"));
                         //fragmentCSMSMessage.DeletedFromTA = true;
                     }
                 }

@@ -52,9 +52,6 @@ public class PDUEncoder
         PDUHeader.ValidityPeriodFormatUsed = ValidityPeriodFormat.Relative;
         PDUHeader.RejectDuplicates = RejectDuplicates;
         PDUHeader.StatusReportRequested = RequestStatusReport;
-        /*
-         * 
-         */
 
         return new[] { GetPDU(null, Message) };
     }

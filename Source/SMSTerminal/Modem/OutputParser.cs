@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NLog;
+using SMSTerminal.Commands;
 using SMSTerminal.Events;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
@@ -64,7 +65,7 @@ internal class OutputParser : IOutputParser
         foreach (var line in outputLines)
         {
             outputBuffer.Append(line);
-            
+
             if (outputBuffer.ToString().ContainsOutputEndMarker())
             {
                 /*
@@ -80,20 +81,20 @@ internal class OutputParser : IOutputParser
                 try
                 {
                     modemData = new ModemData(outputBuffer.ToString());
-                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting)
+                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMS)
                     {
                         ModemEventManager.ModemInternalEvent(this, _modem.ModemId, modemData.ModemResult, modemData.ModemDataClass, modemData.Data);
                     }
                     else if (modemData.ModemDataClass == ModemDataClassEnum.NewStatusReport)
                     {
-                        if (SmsFunctions.StatusReportCDSIsComplete(modemData.Data, out var cdsData))
-                        {
-                            var readMessages = PDUMessageParser.ParseRawModemOutput(cdsData);
-                            foreach (var modemMessage in readMessages)
-                            {
-                                ModemEventManager.NewSMSEvent(this,(IncomingSms.Convert(modemMessage)), modemMessage);
-                            }
-                        }
+                        var readMessages = PDUMessageParser.ParseRawModemOutput(modemData.Data);
+                        /*
+                         * Only one message at a time is matched in the ContainsOutputEndMarker.
+                         */
+                        var incomingSMS = IncomingSms.Convert(readMessages[0]);
+                        var cts = new CancellationTokenSource(ModemTimings.MS100);
+                        await _modem.AsyncCommandsChannel.Writer.WriteAsync(new ATStatusReportACKCommand(_modem), cts.Token);
+                        ModemEventManager.NewSMSEvent(this, incomingSMS);
                     }
                     else
                     {

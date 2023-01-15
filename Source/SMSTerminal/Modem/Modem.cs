@@ -24,9 +24,16 @@ internal class Modem : IDisposable, IModem
     private readonly SerialPort _serialPort;
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     internal Channel<ModemData> ModemDataChannel { get; } = Channel.CreateUnbounded<ModemData>();
+    /// <summary>
+    /// Sometimes commands needs to be executed in regards of unsolicited report commands, since they
+    /// are unsolicited the modem itself doesn't know about them.
+    /// The modem reads this channel and executes any commands found here.
+    /// </summary>
+    internal Channel<ATCommand> AsyncCommandsChannel { get; } = Channel.CreateUnbounded<ATCommand>();
     private readonly Channel<ModemData> _unknownModemDataChannel = Channel.CreateUnbounded<ModemData>();
     private ISerialReceiver _serialReceiver;
     public Signals Signals { get; } = new();
+    public bool SendNewMessageAcknowledgement { get; set; }
 
     public Modem(GsmModemConfig gsmModemConfig)
     {
@@ -51,6 +58,7 @@ internal class Modem : IDisposable, IModem
         }
     }
 
+    AsyncCommandsChannel
     private static void ReleaseUnmanagedResources()
     {
         // TODO release unmanaged resources here
@@ -267,8 +275,8 @@ internal class Modem : IDisposable, IModem
     {
         try
         {
-            while (Signals.IsActive(SignalType.SendingSMS, $"{ModemId}.SendSMS Start") ||
-                   Signals.IsActive(SignalType.ReadingSMS, $"{ModemId}.SendSMS Start"))
+            while (Signals.IsActive(SignalType.SendingSMS, $"{ModemId}.ReadSMS Start") ||
+                   Signals.IsActive(SignalType.ReadingSMS, $"{ModemId}.ReadSMS Start"))
             {
                 await Task.Delay(ModemTimings.MS300);
             }
@@ -281,7 +289,13 @@ internal class Modem : IDisposable, IModem
             Signals.SetEnded(SignalType.ReadingSMS);
         }
     }
-    
+
+    public async Task<bool> SendNewMessageACK()
+    {
+        var command = new ATStatusReportACKCommand(this);
+        return await ExecuteCommand(command);
+    }
+
     /*
     public void ApplyCallForwardingSettings()
     {

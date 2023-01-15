@@ -9,7 +9,7 @@ namespace SMSTerminal.Commands;
 /// <summary>
 /// Sends SMS
 /// </summary>
-internal class ATSendSMSCommand : ATCommandBase
+internal class ATSendSMSCommand : ATCommand
 {
     private readonly OutgoingSms _outgoingSms;
 
@@ -85,9 +85,9 @@ internal class ATSendSMSCommand : ATCommandBase
         foreach (var pdu in pduArray)
         {
             //Add AT command to prepare modem for SMS data
-            ATCommandsList.Add(new ATCommand(ATCommands.ATSendSmsPDU + (pdu.Length - 2) / 2, ATCommands.ATEndPart));
+            ATCommandsList.Add(new ATCommandLine(ATCommands.ATSendSmsPDU + (pdu.Length - 2) / 2, ATCommands.ATEndPart));
             //Add the PDU that will be sent (SMS data)
-            ATCommandsList.Add(new ATCommand(pdu, ATCommands.ATCommandCtrlZ.ToString()));
+            ATCommandsList.Add(new ATCommandLine(pdu, ATCommands.ATCommandCtrlZ.ToString()));
         }
     }
 }
