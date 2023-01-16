@@ -32,10 +32,15 @@ internal class Modem : IDisposable, IModem
     private readonly Channel<ATCommand> _asyncCommandsChannel = Channel.CreateUnbounded<ATCommand>();
     private readonly Channel<ModemData> _unknownModemDataChannel = Channel.CreateUnbounded<ModemData>();
     private ISerialReceiver _serialReceiver;
-    public Signals Signals { get; } = new();
-    public bool SendNewMessageAcknowledgement { get; set; }
+
+    public SemaphoreSlim ReadFromModemSemaphore { get; }= new(1);
+    private SemaphoreSlim SendingSMSSemaphore { get; } = new(1);
+    private SemaphoreSlim ReadSMSSemaphore { get; } = new(1);
+    private readonly SemaphoreSlim _writeToModemSemaphore = new(1);
+    private readonly SemaphoreSlim _executingCommandSemaphore = new(1);
+    
     private bool _shutdown;
-    private readonly AutoResetEvent _asyncCommandResetEvent = new AutoResetEvent(false);
+    private readonly AutoResetEvent _asyncCommandResetEvent = new(false);
 
     public Modem(GsmModemConfig gsmModemConfig)
     {
@@ -82,7 +87,7 @@ internal class Modem : IDisposable, IModem
 
     /// <summary>
     /// Some output from the modem must be handled asynchronously.
-    /// For example SMS-STATUS-REPORT. These are unsolicited => modem knows nothing about them
+    /// For example SMS-STATUS-REPORT. These are unsolicited => (software)modem knows nothing about them
     /// as they are not the result of an AT command. So while reading the modem and a SMS-STATUS-REPORT
     /// shows up the report must be acknowledged to the TE/mobile network. That command for example is added
     /// to the AsyncCommandsChannel.
@@ -173,8 +178,7 @@ internal class Modem : IDisposable, IModem
     {
         ModemEventManager.ModemEvent(this, ModemId, message, ModemEventType.ModemComms, ModemId, modemResultEnum);
     }
-
-    private string _previousCommand = "";
+    
     public async Task<bool> ExecuteCommand(ICommand command)
     {
         try
@@ -182,14 +186,8 @@ internal class Modem : IDisposable, IModem
             //Not to choke the modem
             await Task.Delay(ModemTimings.MS300);
 
-            while (Signals.IsActive(SignalType.ExecutingCommand, $"{command.CommandType} ExecuteCommand Wait"))
-            {
-                await Task.Delay(ModemTimings.MS200);
-                Logger.Debug($"Last command was {_previousCommand}");
-            }
-
-            _previousCommand = command.CommandType;
-            Signals.SetStarted(SignalType.ExecutingCommand);
+            await _executingCommandSemaphore.WaitAsync();
+            
             await WriteTextData(command.CurrentATCommand.ATCommandString + command.CurrentATCommand.TerminationString);
             var done = false;
 
@@ -238,7 +236,7 @@ internal class Modem : IDisposable, IModem
         }
         finally
         {
-            Signals.SetEnded(SignalType.ExecutingCommand);
+            _executingCommandSemaphore.Release();
         }
 
         return true;
@@ -261,11 +259,7 @@ internal class Modem : IDisposable, IModem
             Logger.Debug("{0} PDUModem about to write ->{1}<-", ModemId, text);
             var byteArray = Common.UsedEncoding.GetBytes(text);
 
-            while (Signals.IsActive(SignalType.ReadingModem, "WriteTextData Wait") || Signals.IsActive(SignalType.ModemWriting, "WriteTextData Wait"))
-            {
-                await Task.Delay(ModemTimings.MS200);
-            }
-            Signals.SetStarted(SignalType.ModemWriting);
+            await _writeToModemSemaphore.WaitAsync();
             try
             {
                 var cts = new CancellationTokenSource(ModemTimings.ModemWriteTimeout);
@@ -273,7 +267,7 @@ internal class Modem : IDisposable, IModem
             }
             finally
             {
-                Signals.SetEnded(SignalType.ModemWriting);
+                _writeToModemSemaphore.Release();
             }
 
         }
@@ -290,23 +284,20 @@ internal class Modem : IDisposable, IModem
     {
         try
         {
-            while (Signals.IsActive(SignalType.SendingSMS, $"{ModemId}.SendSMS Start") ||
-                   Signals.IsActive(SignalType.ReadingSMS, $"{ModemId}.SendSMS Start"))
-            {
-                await Task.Delay(ModemTimings.MS300);
-            }
+            await SendingSMSSemaphore.WaitAsync();
+            await ReadSMSSemaphore.WaitAsync();
 
             if (outgoingSms.ByteLength() > 160 && !await ExecuteCommand(new ATKeepSMSRelayLinkOpen(this)))
             {
-                Logger.Error("Failed to set Keep SMS Relay Channel Open before sending SMS.");
+                Logger.Error("Failed to set Keep SMS Relay Channel Open before sending SMS. Not necessary a problem.");
             }
-            Signals.SetStarted(SignalType.SendingSMS);
-            var command = new ATSendSMSCommand(this, outgoingSms);
-            return await ExecuteCommand(command);
+            
+            return await ExecuteCommand(new ATSendSMSCommand(this, outgoingSms));
         }
         finally
         {
-            Signals.SetEnded(SignalType.SendingSMS);
+            SendingSMSSemaphore.Release();
+            ReadSMSSemaphore.Release();
         }
     }
 
@@ -314,18 +305,14 @@ internal class Modem : IDisposable, IModem
     {
         try
         {
-            while (Signals.IsActive(SignalType.SendingSMS, $"{ModemId}.ReadSMS Start") ||
-                   Signals.IsActive(SignalType.ReadingSMS, $"{ModemId}.ReadSMS Start"))
-            {
-                await Task.Delay(ModemTimings.MS300);
-            }
-            Signals.SetStarted(SignalType.ReadingSMS);
-            var command = new ATReadSMSCommand(this, smsReadStatus);
-            return await ExecuteCommand(command);
+            await SendingSMSSemaphore.WaitAsync();
+            await ReadSMSSemaphore.WaitAsync();
+            return await ExecuteCommand(new ATReadSMSCommand(this, smsReadStatus));
         }
         finally
         {
-            Signals.SetEnded(SignalType.ReadingSMS);
+            SendingSMSSemaphore.Release();
+            ReadSMSSemaphore.Release();
         }
     }
 

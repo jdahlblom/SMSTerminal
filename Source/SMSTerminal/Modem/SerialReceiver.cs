@@ -28,11 +28,7 @@ internal class SerialReceiver : ISerialReceiver
 
     public async void ReceiveTextOverSerial(object sender, SerialDataReceivedEventArgs e)
     {
-        while (Modem.Signals.IsActive(SignalType.ReadingModem, "ReceiveTextOverSerial"))
-        {
-            await Task.Delay(ModemTimings.MS200);
-        }
-        Modem.Signals.SetStarted(SignalType.ReadingModem);
+        await Modem.ReadFromModemSemaphore.WaitAsync();
 
         switch (e.EventType)
         {
@@ -107,6 +103,6 @@ internal class SerialReceiver : ISerialReceiver
             }
         }
 
-        Modem.Signals.SetEnded(SignalType.ReadingModem);
+        Modem.ReadFromModemSemaphore.Release();
     }
 }

@@ -25,8 +25,7 @@ internal interface IModem
     ISerialReceiver SerialReceiver { set; }
     Task<bool> SendSMS(OutgoingSms outgoingSms);
     Task<bool> ReadSMS(SMSReadStatus smsReadStatus);
-    bool SendNewMessageAcknowledgement { get; set; }
-    Signals Signals { get; }
+    SemaphoreSlim ReadFromModemSemaphore { get; }
     void Dispose();
 
 }

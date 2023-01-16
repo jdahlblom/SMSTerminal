@@ -52,7 +52,7 @@ public class IncomingSms : IShortMessageService
         {
             if (IsStatusReport)
             {
-                return "This is an status report for message sent on " +
+                return "This is a status report for the message sent on " +
                        DateSent +
                        $" to telephone {SenderTelephone}. Status for message sent is : {PDUFunctions.GetFriendlyTpStatusMessage(StatusReportStatus)}";
             }
