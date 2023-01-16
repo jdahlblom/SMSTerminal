@@ -17,13 +17,13 @@ public class PDUEncoder
 
     public PDUEncoder(string phoneNumber, string message, SMSEncoding smsEncoding, int daysValid, bool requestStatusReport = false, bool rejectDuplicates = true)
     {
-        PDUHeaderObject = new PDUHeader(MessageDirection.OUTGOING);
+        PDUHeader = new PDUHeader(MessageDirection.OUTGOING);
         PhoneNumber = phoneNumber;
         RequestStatusReport = requestStatusReport;
         RejectDuplicates = rejectDuplicates;
         Message = message;
         SmsEncoding = smsEncoding;
-        SMSValidityPeriod = new PDUValidityPeriod(PDUHeaderObject, new TimeSpan(daysValid, 0, 0, 0));
+        SMSValidityPeriod = new PDUValidityPeriod(PDUHeader, new TimeSpan(daysValid, 0, 0, 0));
     }
 
     public  string[] MakePDU()
@@ -48,13 +48,10 @@ public class PDUEncoder
         /*
          * PDU Octet
          */
-        PDUHeaderObject.SmsMessageType = SMSMessageType.SMS_SUBMIT;
-        PDUHeaderObject.ValidityPeriodFormatUsed = ValidityPeriodFormat.Relative;
-        PDUHeaderObject.RejectDuplicates = RejectDuplicates;
-        PDUHeaderObject.StatusReportRequested = RequestStatusReport;
-        /*
-         * 
-         */
+        PDUHeader.SmsMessageType = SMSMessageType.SMS_SUBMIT;
+        PDUHeader.ValidityPeriodFormatUsed = ValidityPeriodFormat.Relative;
+        PDUHeader.RejectDuplicates = RejectDuplicates;
+        PDUHeader.StatusReportRequested = RequestStatusReport;
 
         return new[] { GetPDU(null, Message) };
     }
@@ -96,11 +93,11 @@ public class PDUEncoder
         /*
          * PDU Header (same in all parts of the concat message)
          */
-        PDUHeaderObject.UserDataHeaderExists = true;
-        PDUHeaderObject.SmsMessageType = SMSMessageType.SMS_SUBMIT;
-        PDUHeaderObject.ValidityPeriodFormatUsed = ValidityPeriodFormat.Relative;
-        PDUHeaderObject.RejectDuplicates = RejectDuplicates;
-        PDUHeaderObject.StatusReportRequested = RequestStatusReport;
+        PDUHeader.UserDataHeaderExists = true;
+        PDUHeader.SmsMessageType = SMSMessageType.SMS_SUBMIT;
+        PDUHeader.ValidityPeriodFormatUsed = ValidityPeriodFormat.Relative;
+        PDUHeader.RejectDuplicates = RejectDuplicates;
+        PDUHeader.StatusReportRequested = RequestStatusReport;
         /*
          * UserDataHeader & message different in each part of the concat message
          */
@@ -129,7 +126,7 @@ public class PDUEncoder
         /*
          * 
          */
-        var pduTypeHex = Convert.ToString(PDUHeaderObject.Octet(), 16).PadLeft(2, '0'); //First octet describes the PDU
+        var pduTypeHex = Convert.ToString(PDUHeader.Octet(), 16).PadLeft(2, '0'); //First octet describes the PDU
         //Logger.Debug("First Octet = ->{0}<-->{1}<-", pduTypeHex.ToUpper(), _pduHeaderObject);
         encodedData += pduTypeHex;
         /*
@@ -158,7 +155,7 @@ public class PDUEncoder
         /*
          * 
          */
-        if (PDUHeaderObject.ValidityPeriodFormatUsed != ValidityPeriodFormat.FieldNotPresent)
+        if (PDUHeader.ValidityPeriodFormatUsed != ValidityPeriodFormat.FieldNotPresent)
         {
             var validityPeriod = Convert.ToString(SMSValidityPeriod.ValidityPeriodInt, 16).PadLeft(2, '0');
             //Logger.Debug("TP-Validity-Period = ->{0}<-", validityPeriod.ToUpper());
@@ -571,7 +568,7 @@ public class PDUEncoder
     private string ServiceCenterNumber { get; set; }
     private DateTime ServiceCenterTimeStamp { get; set; }
     private PDUUserDataHeader UserDataHeaderObject { get; set; }
-    private PDUHeader PDUHeaderObject { get; set; }
+    private PDUHeader PDUHeader { get; set; }
     private SMSEncoding SmsEncoding { get; set; } = SMSEncoding._7bit;
     private PDUValidityPeriod SMSValidityPeriod { get; set; }
 

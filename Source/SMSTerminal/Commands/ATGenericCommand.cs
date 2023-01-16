@@ -1,19 +1,18 @@
-﻿using SMSTerminal.General;
-using SMSTerminal.Interfaces;
+﻿using SMSTerminal.Interfaces;
 using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
 /// <summary>
-/// This speeds up SMS execution.
+/// Generic Command used to execute ad-hoc AT commands.
 /// </summary>
-internal class ATKeepSMSRelayLinkOpen : ATCommand
+internal class ATGenericCommand : ATCommand
 {
-    public ATKeepSMSRelayLinkOpen(IModem modem)
+    public ATGenericCommand(IModem modem, string atCommand, string terminationString)
     {
         Modem = modem;
-        CommandType = "[AT SMS Relay Link Command]";
-        var command = new ATCommandLine(ATCommands.ATKeepSMSRelayLinkOpen, ATCommands.ATEndPart);
+        CommandType = "[AT Generic Command]";
+        var command = new ATCommandLine(atCommand, terminationString);
         ATCommandsList.Add(command);
     }
 

@@ -8,9 +8,4 @@ public class SMSReceivedEventArgs : EventArgs
     /// Simple version with the most relevant information
     /// </summary>
     public IShortMessageService ShortMessageService { get; init; }
-
-    /// <summary>
-    /// Contains technical information about the message
-    /// </summary>
-    public IModemMessage ModemMessage { get; init; }
 }

@@ -1,8 +1,8 @@
 ﻿using NLog;
 using SMSTerminal.Commands;
 using SMSTerminal.Events;
-using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.PDU;
 using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Modem;
@@ -76,7 +76,7 @@ public class ModemManager : IDisposable, IModemInternalListener
     {
         try
         {
-            if (e.ModemMessageClass != ModemDataClassEnum.NewSMSWaiting) return;
+            if (e.ModemMessageClass != ModemDataClassEnum.NewSMS) return;
 
             foreach (var modem in _modems.Where(modem => modem.ModemId == e.ModemId))
             {
@@ -121,7 +121,7 @@ public class ModemManager : IDisposable, IModemInternalListener
             }
 
             modem = new Modem(gsmModemConfig);
-                
+
             var outputParser = new OutputParser(modem);
             var serialReceiver = new SerialReceiver(outputParser)
             {
@@ -193,6 +193,16 @@ public class ModemManager : IDisposable, IModemInternalListener
         return true;
     }
 
+    public void ParsePDU(string pdu)
+    {
+        PDUMessageParser.ParseRawModemOutput(pdu);
+    }
+
+    public string DecodePDU(string pdu)
+    {
+        return new PDUDecoder().Decode(null, SMSEncoding._7bit, "079153485002022002000A814000026578321031209500803210312095008000");
+    }
+
     public List<string> GetModemList()
     {
         return _modems.Select(o => o.ModemId).ToList();
@@ -229,9 +239,45 @@ public class ModemManager : IDisposable, IModemInternalListener
     {
         foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
         {
-            return await _modems[0].ExecuteCommand(new ATGetNetworkStatusCommand(_modems[0]));
+            return await modem.ExecuteCommand(new ATGetNetworkStatusCommand(modem));
         }
         return false;
+    }
+
+    public async Task<bool> ExecuteATCommand(string modemId, string atCommand, string terminationString)
+    {
+        foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
+        {
+            var command = new ATGenericCommand(modem, atCommand, terminationString);
+            return await modem.ExecuteCommand(command);
+        }
+        return false;
+    }
+
+    public async Task<List<ModemMemory>> ReadModemMemoryStats(string modemId)
+    {
+        foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
+        {
+            var command = new ATSMSMemoryCommand(modem);
+            if (await modem.ExecuteCommand(command))
+            {
+                return command.ModemMemoryList;
+            }
+        }
+        return null;
+    }
+
+    public async Task<List<ModemMemory>> SetModemMemoryUsed(string modemId, ModemMemoryType modemMemoryTypeToUse1, ModemMemoryType modemMemoryTypeToUse2, ModemMemoryType modemMemoryTypeToUse3)
+    {
+        foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
+        {
+            var command = new ATSMSMemoryCommand(modem, modemMemoryTypeToUse1, modemMemoryTypeToUse2, modemMemoryTypeToUse3);
+            if (await modem.ExecuteCommand(command))
+            {
+                return command.ModemMemoryList;
+            }
+        }
+        return null;
     }
 
     public void CloseTerminals()

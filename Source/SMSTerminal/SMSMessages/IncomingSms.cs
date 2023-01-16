@@ -6,25 +6,27 @@ namespace SMSTerminal.SMSMessages;
 
 public class IncomingSms : IShortMessageService
 {
-    private DateTimeOffset _dateSent;//PDU Timestamp
-    private DateTimeOffset _dateReceived;
     private string _message;
-
-
-
+    
     public string MessageId { get; set; }
     public int ContactId { get; set; }
     public string SenderName { get; set; }
     public string SenderTelephone { get; set; }
-    //Can set modem ID to this field.
     public string ReceiverName { get; set; }
     public string ReceiverTelephone { get; set; }
     public string ExternalTelephone { get; set; }
     public string ModemTelephone { get; set; }
     public SmsDirection Direction => SmsDirection.Incoming;
-    public DateTime DateCreated => _dateSent.ToLocalTime().DateTime;
-    public DateTime DateSent => _dateSent.ToLocalTime().DateTime;
-    public DateTime DateReceived => _dateReceived.ToLocalTime().DateTime;
+    public DateTimeOffset PDUTimeStamp { get; set; }
+    public DateTime DateCreated => PDUTimeStamp.ToLocalTime().DateTime;
+    /// <summary>
+    /// If SMS-STATUS-REPORT it refers to when original SMS was sent 
+    /// </summary>
+    public DateTime DateSent => PDUTimeStamp.ToLocalTime().DateTime;
+    /// <summary>
+    /// When SMSTerminal received the message.
+    /// </summary>
+    public DateTime DateReceived { get; private set; }
     public SMSEncoding SMSEncoding { get; set; }
     public string SenderId { get; set; }
     public string RawString { get; set; }
@@ -36,7 +38,7 @@ public class IncomingSms : IShortMessageService
     public DateTimeOffset StatusReportDischargeTimeStamp { get; set; }
     public int StatusReportReference { get; set; }
     public TpStatus StatusReportStatus { get; set; }
-
+    public string FullPDUInformation { get; set; }
 
     public string ExternalName
     {
@@ -50,12 +52,9 @@ public class IncomingSms : IShortMessageService
         {
             if (IsStatusReport)
             {
-                return "This is an status report for message sent on " +
-                       "get date" +  //TODO
-                       " to telephone " +
-                       SenderTelephone +
-                       ". Status for message sent is : " + Environment.NewLine +
-                       PDUFunctions.GetFriendlyTpStatusMessage(StatusReportStatus);
+                return "This is a status report for the message sent on " +
+                       DateSent +
+                       $" to telephone {SenderTelephone}. Status for message sent is : {PDUFunctions.GetFriendlyTpStatusMessage(StatusReportStatus)}";
             }
             return _message ?? "";
         }
@@ -104,13 +103,14 @@ public class IncomingSms : IShortMessageService
         {
             ModemTelephone = modemMessage.ModemTelephone,
             SenderTelephone = modemMessage.Telephone,
-            _dateSent = modemMessage.DateSent,
-            _dateReceived = modemMessage.DateReceived,
+            PDUTimeStamp = modemMessage.DateSent,
+            DateReceived = modemMessage.DateReceived.ToLocalTime().DateTime,
             RawMessage = modemMessage.RawMessage,
             Message = modemMessage.Message,
-            /*STATUS REPORT SPECIFIC FIELDS*/
-            IsStatusReport = modemMessage.IsStatusReport
+            IsStatusReport = modemMessage.IsStatusReport,
+            FullPDUInformation = modemMessage.FullPDUInformation
         };
+
         if (!modemMessage.IsStatusReport) return incomingSms;
 
         incomingSms.StatusReportDischargeTimeStamp = modemMessage.StatusReportDischargeTimeStamp;

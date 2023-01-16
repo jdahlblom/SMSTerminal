@@ -1,6 +1,8 @@
 ﻿using System.IO.Ports;
+using System.Threading.Channels;
 using SMSTerminal.Commands;
 using SMSTerminal.General;
+using SMSTerminal.Modem;
 using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Interfaces;
@@ -23,7 +25,7 @@ internal interface IModem
     ISerialReceiver SerialReceiver { set; }
     Task<bool> SendSMS(OutgoingSms outgoingSms);
     Task<bool> ReadSMS(SMSReadStatus smsReadStatus);
-    Signals Signals { get; }
+    SemaphoreSlim ReadFromModemSemaphore { get; }
     void Dispose();
 
 }

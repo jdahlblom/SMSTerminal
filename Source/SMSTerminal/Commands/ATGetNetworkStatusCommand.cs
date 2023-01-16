@@ -1,19 +1,20 @@
 ﻿using SMSTerminal.Events;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
 /// <summary>
 /// Returns network status, whether connected to mobile network or not.
 /// </summary>
-internal class ATGetNetworkStatusCommand : ATCommandBase
+internal class ATGetNetworkStatusCommand : ATCommand
 {
     public ATGetNetworkStatusCommand(IModem modem)
     {
         Modem = modem;
         CommandType = "[Get Network Status Command]";
-        var command = new ATCommand(ATCommands.ATNetworkStatusRequestCommand, ATCommands.ATEndPart);
+        var command = new ATCommandLine(ATCommands.ATNetworkStatusRequestCommand, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

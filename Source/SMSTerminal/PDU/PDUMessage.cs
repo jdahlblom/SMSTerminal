@@ -20,12 +20,25 @@ internal class PDUMessage : IModemMessage
     public PDUTypeOfAddress SenderTypeOfAddress { get; set; }
     public PDUProtocolIdentifier PDUProtocolIdentifier { get; set; }
     public PDUUserDataHeader PDUUserDataHeader { get; set; }
-    public PDUTimeStamp PDUTimeStamp { get; set; }
     public PDUDataCodingScheme PDUDataCodingScheme { get; set; }
     public bool HasBeenConcatenated { get; set; }
     public int StatusReportReference { get; set; }
     public TpStatus StatusReportStatus { get; set; } = TpStatus.TP_STATUS_NONE;
+
+    /// <summary>
+    /// If SMS-STATUS-REPORT then it is the timestamp when original SMS was sent.
+    /// If SMS-SUBMIT then it is the Service Centre Time Stamp.
+    /// </summary>
+    public PDUTimeStamp PDUTimeStamp { get; set; }
+    /// <summary>
+    /// If SMS-STATUS-REPORT then it is the timestamp when original SMS was sent.
+    /// If SMS-SUBMIT then it is the Service Centre Time Stamp.
+    /// </summary>
     public DateTimeOffset DateSent => PDUTimeStamp.GetDateTimeOffset();
+
+    /*
+     * When SMSTerminal received the message.
+     */
     public DateTimeOffset DateReceived { get; set; }
     public string RawMessage { get; set; } = "";
     public List<int> MemorySlots { get; set; } = new();
@@ -38,14 +51,15 @@ internal class PDUMessage : IModemMessage
     private long MaxAgeMilliSecs { get; }
     public string ModemTelephone { get; set; }
     public bool DeletedFromTA { get; set; }
+    public string FullPDUInformation  => ToString();
     /*
      * Specific PDU members:
      */
 
     /* SPECIFIC TO SMS-STATUS-REPORT*/
-    public DateTimeOffset StatusReportDischargeTimeStamp => PDUStatusReportSmsDischargeTimeStamp.GetDateTimeOffset();
-    /*IMPORTANT: THE PDU TIMESTAMP FOR SMS ORIGINALLY SENT IE THE SMS THE STATUS REPORT CONCERNS IS STORED UNDER _pduTimeStamp*/
-    public PDUTimeStamp PDUStatusReportSmsDischargeTimeStamp { get; set; }
+    public DateTimeOffset StatusReportDischargeTimeStamp => PDUStatusReportSMSDischargeTimeStamp.GetDateTimeOffset();
+    /*IMPORTANT: THE PDU TIMESTAMP FOR SMS ORIGINALLY SENT IE THE SMS THE SMS-STATUS-REPORT CONCERNS IS STORED UNDER PDUTimeStamp*/
+    public PDUTimeStamp PDUStatusReportSMSDischargeTimeStamp { get; set; }
 
     public PDUMessage(DateTimeOffset dateReceived, string rawMessage, long maxAgeMilliSecs)
     {
@@ -223,7 +237,7 @@ internal class PDUMessage : IModemMessage
                              "UnDecodedMessage: {11}" + Environment.NewLine +
                              "PduStatusReportReference: {12}" + Environment.NewLine +
                              "StatusReportStatus: {13}" + Environment.NewLine +
-                             "PduStatusReportSmsDischargeTimeStamp: {14}" + Environment.NewLine +
+                             "PduStatusReportSMSDischargeTimeStamp: {14}" + Environment.NewLine +
                              "Telephone : {15}" + Environment.NewLine +
                              "ReadableMessage : {16}" + Environment.NewLine +
                              "IsConcatenated : {17}" + Environment.NewLine +
@@ -232,6 +246,6 @@ internal class PDUMessage : IModemMessage
             HasBeenConcatenated, HasExpired(), string.Join(",", MemorySlots), PDUDataCodingScheme,
             PDUHeader, PDUProtocolIdentifier, PDUTimeStamp, PDUUserDataHeader,
             RawMessage, SenderTypeOfAddress, SMSCTypeOfAddress, _unDecodedMessage,
-            StatusReportReference, StatusReportStatus, PDUStatusReportSmsDischargeTimeStamp, Telephone, Message, IsCMS, MessageReference);
+            StatusReportReference, StatusReportStatus, PDUStatusReportSMSDischargeTimeStamp, Telephone, Message, IsCMS, MessageReference);
     }
 }

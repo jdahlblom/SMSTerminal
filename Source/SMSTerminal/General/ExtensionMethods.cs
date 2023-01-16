@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using SMSTerminal.Events;
 using SMSTerminal.Interfaces;
@@ -28,9 +29,9 @@ public static class ExtensionMethods
             case ModemResultEnum.Ok:
                 return false;
             default:
-            {
-                throw new Exception($"ModemResultEnum : {modemResultEnum} isn't implemented.");
-            }
+                {
+                    throw new Exception($"ModemResultEnum : {modemResultEnum} isn't implemented.");
+                }
         }
     }
 
@@ -93,11 +94,9 @@ public static class ExtensionMethods
     {
         if (string.IsNullOrEmpty(message)) return false;
 
-        return message.Contains(ATMarkers.NewSMSArrivedSM) ||
-               message.Contains(ATMarkers.NewSMSArrivedMT) ||
-               message.Contains(ATMarkers.NewSMSArrivedME) ||
+        return SmsFunctions.StatusReportCDSIsComplete(message, out _) || 
+               ATMarkers.NewMessageMarkerList.Any(message.Contains) ||
                ATCommands.ContainsResultCode(message) ||
-               //ATCommands.ContainsEscapeChars(message) ||
                message.Contains(ATMarkers.ReadyPrompt);
     }
 

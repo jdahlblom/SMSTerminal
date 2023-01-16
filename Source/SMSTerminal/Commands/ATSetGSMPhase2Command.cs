@@ -1,5 +1,6 @@
 ﻿using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
@@ -8,13 +9,13 @@ namespace SMSTerminal.Commands;
 /// With this SMSTerminal is notified automatically when there are new
 /// SMS waiting the be read.
 /// </summary>
-internal class ATSetGSMPhase2Command : ATCommandBase
+internal class ATSetGSMPhase2Command : ATCommand
 {
     public ATSetGSMPhase2Command(IModem modem)
     {
         Modem = modem;
         CommandType = "[Set GSM Phase 2 Command]";
-        var command = new ATCommand(ATCommands.ATGSMPhase2Command, ATCommands.ATEndPart);
+        var command = new ATCommandLine(ATCommands.ATGSMPhase2Command, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

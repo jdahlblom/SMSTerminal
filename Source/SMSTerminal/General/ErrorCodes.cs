@@ -518,6 +518,7 @@ internal static class ErrorCodes
         ErrorMessageList.Add(new ModemErrorMessage(ErrorType.CMS, 330, " +CMS ERROR 330 : SMSC address unknown"));
         ErrorMessageList.Add(new ModemErrorMessage(ErrorType.CMS, 331, " +CMS ERROR 331 : no network service"));
         ErrorMessageList.Add(new ModemErrorMessage(ErrorType.CMS, 332, " +CMS ERROR 332 : network time-out"));
+        ErrorMessageList.Add(new ModemErrorMessage(ErrorType.CMS, 430, " +CMS ERROR 340 : no +CNMA acknowledgement expected"));
         ErrorMessageList.Add(new ModemErrorMessage(ErrorType.CMS, 500, " +CMS ERROR 500 : unknown error"));
     }
 }

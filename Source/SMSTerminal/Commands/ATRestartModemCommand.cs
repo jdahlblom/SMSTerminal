@@ -1,18 +1,19 @@
 ﻿using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
 /// <summary>
 /// Restarts the modem.
 /// </summary>
-internal class ATRestartModemCommand : ATCommandBase
+internal class ATRestartModemCommand : ATCommand
 {
     public ATRestartModemCommand(IModem modem)
     {
         Modem = modem;
         CommandType = "[AT Restart Modem Command]";
-        var command = new ATCommand(ATCommands.ATRestartModem, ATCommands.ATEndPart);
+        var command = new ATCommandLine(ATCommands.ATRestartModem, ATCommands.ATEndPart);
         ATCommandsList.Add(command);
     }
 

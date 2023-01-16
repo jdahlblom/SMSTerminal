@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.IO.Ports;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using NLog;
 using SMSTerminal.Events;
@@ -17,7 +19,7 @@ namespace SMSWindow;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSListener
+public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSListener, IATCommandListener
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private GsmModemConfig _gsmModemConfig = new();
@@ -33,6 +35,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
 
         ModemEventManager.AttachNewSMSListener(this);
         ModemEventManager.AttachModemEventListener(this);
+        ModemEventManager.AttachATEventListener(this);
 
         _gsmModemConfig.BaudRate = BaudRate.Baudrate115200;
         _gsmModemConfig.ComPort = "COM4";
@@ -54,6 +57,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     {
         ModemEventManager.DetachNewSMSListener(this);
         ModemEventManager.DetachModemEventListener(this);
+        ModemEventManager.DetachATEventListener(this);
         _modemManager?.Dispose();
     }
 
@@ -90,9 +94,33 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
 
     public void NewSMSEvent(object sender, SMSReceivedEventArgs e)
     {
-        //var message = $"-------------------------------------\n{e.ShortMessageService.ToString()}<-";
-        var message = $"-------------------------------------\n[{e.ShortMessageService.SenderTelephone}](chars:{e.ShortMessageService.Message.Length})\n->{e.ShortMessageService.Message}<-";
+        var message = "";
+        if (e.ShortMessageService.IsStatusReport)
+        {
+            message = $"-------------------------------------\n[{e.ShortMessageService.SenderTelephone}]" +
+                          $"(chars:{e.ShortMessageService.Message.Length})\n->{e.ShortMessageService.Message}<-\n------------------------\n" +
+                          $"{e.ShortMessageService.FullPDUInformation}";
+        }
+        else
+        {
+            message = $"-------------------------------------\n[{e.ShortMessageService.SenderTelephone}]" +
+                          $"(chars:{e.ShortMessageService.Message.Length})\n->{e.ShortMessageService.Message}<-";
+        }
         Dispatcher?.BeginInvoke((Action)(() => TextBoxIncomingSMS.Text = TextBoxIncomingSMS.Text + Environment.NewLine + message));
+    }
+    
+    public void ATCommandEvent(object sender, ATCommandEventArgs e)
+    {
+        if (e.ResultStatus.ContainsError())
+        {
+            var message = $"-------------------------------------\n{e.ModemId} : {e.Message} {e.ResultStatus} {e.ErrorMessage}";
+            Dispatcher?.BeginInvoke((Action)(() => TextBoxErrors.Text = TextBoxErrors.Text + Environment.NewLine + message));
+        }
+        else
+        {
+            var message = $"-------------------------------------\n{e.ModemId} : {e.Message} {e.ResultStatus}";
+            Dispatcher?.BeginInvoke((Action)(() => TextBoxModemLog.Text = TextBoxModemLog.Text + Environment.NewLine + message));
+        }
     }
 
     private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
@@ -114,11 +142,17 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         ButtonDisconnect.IsEnabled = _modemManager.HasModems;
         ButtonRestartModem.IsEnabled = _modemManager.HasModems;
         ButtonErrorCommand.IsEnabled = _modemManager.HasModems;
+        ButtonSetSMSMemory.IsEnabled = _modemManager.HasModems && ComboBoxMemory1Type.SelectedValue != null &&
+                                       ComboBoxMemory2Type.SelectedValue != null &&
+                                       ComboBoxMemory3Type.SelectedValue != null;
+        ButtonReadSMSStats.IsEnabled = _modemManager.HasModems;
 
         ButtonClearErrors.IsEnabled = !string.IsNullOrEmpty(TextBoxErrors.Text);
         ButtonClearInSMS.IsEnabled = !string.IsNullOrEmpty(TextBoxIncomingSMS.Text);
         ButtonClearModemLog.IsEnabled = !string.IsNullOrEmpty(TextBoxModemLog.Text);
         ButtonClearUnknown.IsEnabled = !string.IsNullOrEmpty(TextBoxUnknownModemData.Text);
+
+        ButtonExecuteATCommand.IsEnabled = _modemManager.HasModems && !string.IsNullOrEmpty(TextBoxATCommand.Text);
         //ButtonClear.IsEnabled = !string.IsNullOrEmpty(TextBox.Text);
     }
 
@@ -151,6 +185,11 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         ComboBoxModem.ItemsSource = _modemManager.GetModemList();
     }
 
+    private void GetMemoryInfo()
+    {
+
+    }
+
     private void ButtonDisconnect_OnClick(object sender, RoutedEventArgs e)
     {
         try
@@ -180,13 +219,14 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
                 MessageId = _messagedId++.ToString(),
                 Message = TextBoxSMSText.Text,
                 SMSEncoding = (SMSEncoding)ComboBoxEncoding.SelectedValue,
-                ReceiverTelephone = TextBoxTphNumber.Text
+                ReceiverTelephone = TextBoxTphNumber.Text,
+                RequestStatusReport = CheckBoxStatusReport.IsChecked is true
             };
 
             TextBoxOutgoingSMSLog.Text = TextBoxOutgoingSMSLog.Text + Environment.NewLine + $"Sending ({outgoingSms.Message.Length}) : " +
                                          Environment.NewLine + outgoingSms.Message;
 
-            if (!await _modemManager.SendSMS((string)ComboBoxModem.SelectedValue, outgoingSms))
+            if (!await _modemManager.SendSMS(GetSelectedModem(), outgoingSms))
             {
                 MessageBox.Show(this, $"Failed to send SMS with Id {outgoingSms.MessageId}.", "Error", MessageBoxButton.OK);
             }
@@ -270,7 +310,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
 
     private async void ButtonNetworkStatus_OnClick(object sender, RoutedEventArgs e)
     {
-        await _modemManager.GetNetworkStatus((string)ComboBoxModem.SelectedValue);
+        await _modemManager.GetNetworkStatus(GetSelectedModem());
     }
 
     private void TextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -336,7 +376,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         try
         {
             Logger.Debug("*******************************MANUAL SMS READING*******************************");
-            await _modemManager.ReadNewSMS((string)ComboBoxModem.SelectedValue);
+            await _modemManager.ReadNewSMS(GetSelectedModem());
         }
         catch (Exception exception)
         {
@@ -349,7 +389,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         try
         {
             Logger.Debug("*******************************MANUAL SMS READING*******************************");
-            await _modemManager.ReadOldSMS((string)ComboBoxModem.SelectedValue);
+            await _modemManager.ReadOldSMS(GetSelectedModem());
         }
         catch (Exception exception)
         {
@@ -361,7 +401,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     {
         try
         {
-            _modemManager.DoError((string)ComboBoxModem.SelectedValue);
+            _modemManager.DoError(GetSelectedModem());
             SetFormState();
         }
         catch (Exception exception)
@@ -398,9 +438,9 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     {
         try
         {
-            if (!await _modemManager.RestartModem((string)ComboBoxModem.SelectedValue))
+            if (!await _modemManager.RestartModem(GetSelectedModem()))
             {
-                MessageBox.Show(this, $"Failed to restart. Either modem not found or error occurred while restarting. {(string)ComboBoxModem.SelectedValue}", "Error", MessageBoxButton.OK);
+                MessageBox.Show(this, $"Failed to restart. Either modem not found or error occurred while restarting. {GetSelectedModem()}", "Error", MessageBoxButton.OK);
             }
 
             RefreshModems();
@@ -415,5 +455,115 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     private void ButtonClearUnknown_OnClick(object sender, RoutedEventArgs e)
     {
         TextBoxUnknownModemData.Text = "";
+    }
+
+    private string GetSelectedModem()
+    {
+        return (string)ComboBoxModem.SelectedValue;
+    }
+
+    private async void ButtonExecuteATCommand_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!await _modemManager.ExecuteATCommand(GetSelectedModem(), TextBoxATCommand.Text, ATTerminationEnum.ATEndPart))
+            {
+                MessageBox.Show(this, $"Failed to execute {TextBoxATCommand.Text}. {GetSelectedModem()}", "Error", MessageBoxButton.OK);
+            }
+
+            SetFormState();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
+    }
+    
+    private void TextBoxATCommand_OnKeyDown(object sender, KeyEventArgs e)
+    {
+        try
+        {
+            if (e.Key == Key.Enter && !string.IsNullOrEmpty(TextBoxATCommand.Text))
+            {
+                ButtonExecuteATCommand_OnClick(this, e);
+            }
+
+            SetFormState();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
+    }
+
+    private async void ButtonSetSMSMemory_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var memoryList = await _modemManager.SetModemMemoryUsed(GetSelectedModem(),
+                (ModemMemoryType)ComboBoxMemory1Type.SelectedValue,
+                (ModemMemoryType)ComboBoxMemory2Type.SelectedValue,
+                (ModemMemoryType)ComboBoxMemory3Type.SelectedValue);
+
+            SetMemoryInformation(memoryList);
+            SetFormState();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
+    }
+
+    private async void ButtonReadSMSStats_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var memoryList = await _modemManager.ReadModemMemoryStats(GetSelectedModem());
+            SetMemoryInformation(memoryList);
+            SetFormState();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
+    }
+
+    private void SetMemoryInformation(List<ModemMemory> modemMemoryList)
+    {
+        if (modemMemoryList == null)
+        {
+            return;
+        }
+
+        LabelMemory1Type.Content = modemMemoryList[0].MemoryType;
+        LabelMemory1Used.Content = modemMemoryList[0].MemoryInUse;
+        LabelMemory1Total.Content = modemMemoryList[0].MemoryTotal;
+        LabelMemory2Type.Content = modemMemoryList[1].MemoryType;
+        LabelMemory2Used.Content = modemMemoryList[1].MemoryInUse;
+        LabelMemory2Total.Content = modemMemoryList[1].MemoryTotal;
+        LabelMemory3Type.Content = modemMemoryList[2].MemoryType;
+        LabelMemory3Used.Content = modemMemoryList[2].MemoryInUse;
+        LabelMemory3Total.Content = modemMemoryList[2].MemoryTotal;
+        ComboBoxMemory1Type.ItemsSource = null;
+        ComboBoxMemory1Type.ItemsSource = modemMemoryList[0].MemoryTypesAvailable;
+        ComboBoxMemory1Type.SelectedValue = modemMemoryList[0].MemoryType;
+        ComboBoxMemory2Type.ItemsSource = null;
+        ComboBoxMemory2Type.ItemsSource = modemMemoryList[1].MemoryTypesAvailable;
+        ComboBoxMemory2Type.SelectedValue = modemMemoryList[1].MemoryType;
+        ComboBoxMemory3Type.ItemsSource = null;
+        ComboBoxMemory3Type.ItemsSource = modemMemoryList[2].MemoryTypesAvailable;
+        ComboBoxMemory3Type.SelectedValue = modemMemoryList[2].MemoryType;
+    }
+
+    private void ButtonDev_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            
+        }
+        catch (Exception exception)
+        {
+            ShowErrorMessageBox(exception);
+        }
     }
 }

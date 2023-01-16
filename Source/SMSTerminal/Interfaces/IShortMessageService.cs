@@ -21,11 +21,14 @@ public interface IShortMessageService
     string ReceiverName { get; }
 
     string ModemTelephone { get; set; }
-
+    DateTimeOffset PDUTimeStamp { get; set; }
     DateTime DateCreated { get; }
     DateTime DateSent { get; }
     string Message { get; set; }
     SmsDirection Direction { get; }
     SMSEncoding SMSEncoding { get; set; }
+    bool IsStatusReport { get; set; }
+    string FullPDUInformation { get; set; }
+    
     bool ContainsSearchString(string searchString);
 }

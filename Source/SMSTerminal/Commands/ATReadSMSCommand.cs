@@ -1,6 +1,7 @@
 ﻿using SMSTerminal.Events;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 using SMSTerminal.PDU;
 using SMSTerminal.SMSMessages;
 
@@ -15,19 +16,19 @@ public enum SMSReadStatus
 /// <summary>
 /// Reads and parses SMS from the modem.
 /// </summary>
-internal class ATReadSMSCommand : ATCommandBase
+internal class ATReadSMSCommand : ATCommand
 {
-    private readonly string _commandString;
+    private readonly string _readCommandString;
 
 
     public ATReadSMSCommand(IModem modem, SMSReadStatus smsReadStatus)
     {
         Modem = modem;
         CommandType = $"[Read [{smsReadStatus}] SMS Command]";
-        _commandString = smsReadStatus == SMSReadStatus.Read
+        _readCommandString = smsReadStatus == SMSReadStatus.Read
             ? ATCommands.ATReadReadSms
             : ATCommands.ATReadUnreadSms;
-        ATCommandsList.Add(new ATCommand(_commandString, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(_readCommandString, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)
@@ -42,32 +43,41 @@ internal class ATReadSMSCommand : ATCommandBase
                 return CommandProgress.NotExpectedDataReply;
             }
             SetModemDataForCurrentCommand(modemData);
+            SendResultEvent();
 
             if (modemData.HasError)
             {
-                SendResultEvent();
                 return CommandProgress.Error;
             }
 
-            if (modemData.Data.Contains(_commandString))
+            if (modemData.Data.Contains(_readCommandString))
             {
-                var readMessages = PDUMessageParser.ParseRawModemOutput(modemData.Data);
-                Logger.Debug("PDU returned {0} messages.", readMessages.Count);
-                if (readMessages.Count == 0)
+                var readCompleteMessages = PDUMessageParser.ParseRawModemOutput(modemData.Data);
+                Logger.Debug("PDU returned {0} complete messages, {1} fragmented messages exist.",
+                    readCompleteMessages.Count, PDUMessageParser.FragmentCSMSMessages.Count);
+                
+                if (readCompleteMessages.Count > 0)
                 {
-                    return CommandProgress.Finished;
-                }
-
-                /*
-                 * Send event about new SMS and also add delete from memory command
-                 */
-                foreach (var modemMessage in readMessages)
-                {
-                    ModemEventManager.NewSMSEvent(this, IncomingSms.Convert(modemMessage), modemMessage);
-                    if (!Modem.GsmModemConfig.DeleteSMSFromModemWhenRead) break;
-                    foreach (var i in modemMessage.MemorySlots)
+                    /*
+                     * Send event about new SMS and also add delete from memory command
+                     */
+                    foreach (var modemMessage in readCompleteMessages)
                     {
-                        ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i));
+                        var incomingSMS = IncomingSms.Convert(modemMessage);
+                        if (incomingSMS.IsStatusReport)
+                        {
+                            /*
+                             * Must confirm that report has been received.
+                             */
+                            ATCommandsList.Add(new ATCommandLine(ATCommands.ATSMSStatusReportACK, ATCommands.ATEndPart)); 
+                        }
+                        ModemEventManager.NewSMSEvent(this, incomingSMS);
+
+                        if (!Modem.GsmModemConfig.DeleteSMSFromModemWhenRead) break;
+                        foreach (var i in modemMessage.MemorySlots)
+                        {
+                            ATCommandsList.Add(new ATCommandLine(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i));
+                        }
                     }
                 }
 
@@ -81,20 +91,21 @@ internal class ATReadSMSCommand : ATCommandBase
                     if (fragmentCSMSMessage.DeletedFromTA) continue;
                     foreach (var i in fragmentCSMSMessage.MemorySlots)
                     {
-                        ATCommandsList.Add(new ATCommand(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i, "Fragment"));
+                        ATCommandsList.Add(new ATCommandLine(ATCommands.ATDeleteSmsAtMemorySlot + i, ATCommands.ATEndPart, i, "Fragment"));
                         //fragmentCSMSMessage.DeletedFromTA = true;
                     }
                 }
 
-                return CommandProgress.NextCommand; //Start doing the delete commands
+                return HasNextATCommand ? CommandProgress.NextCommand : CommandProgress.Finished;
             }
-                
+
+
             if (modemData.Data.Contains(ATCommands.ATDeleteSmsAtMemorySlot))
             {
                 /*
                  * A SMS that belongs to a CSMS but hasn't yet been assembled because all parts haven't yet arrived.
                  */
-                if(ATCommandsList[CommandIndex].StringHolder == "Fragment")
+                if (ATCommandsList[CommandIndex].StringHolder == "Fragment")
                 {
                     PDUMessageParser.MarkFragmentDeletedTA(ATCommandsList[CommandIndex].NumberHolder);
                 }
@@ -113,5 +124,5 @@ internal class ATReadSMSCommand : ATCommandBase
 
         return CommandProgress.Finished;
     }
-        
+
 }

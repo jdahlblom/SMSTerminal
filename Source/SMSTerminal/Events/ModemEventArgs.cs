@@ -19,7 +19,8 @@ public enum ModemEventType
     NetworkStatus,
     NoNewSMSWaiting,
     ModemConfigurationStatus,
-    ModemComms
+    ModemComms,
+    ATCommand
 }
 
 public enum ModemResultEnum

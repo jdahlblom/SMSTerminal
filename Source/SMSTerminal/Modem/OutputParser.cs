@@ -1,9 +1,13 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using NLog;
+using SMSTerminal.Commands;
 using SMSTerminal.Events;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.PDU;
+using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.Modem;
 
@@ -16,6 +20,8 @@ namespace SMSTerminal.Modem;
 /// b) single incomplete message
 /// c) several not related messages where last
 /// message can be complete or incomplete.
+///
+/// Consider it a "ticker tape cutter".
 /// </summary>
 internal class OutputParser : IOutputParser
 {
@@ -59,6 +65,7 @@ internal class OutputParser : IOutputParser
         foreach (var line in outputLines)
         {
             outputBuffer.Append(line);
+
             if (outputBuffer.ToString().ContainsOutputEndMarker())
             {
                 /*
@@ -74,9 +81,19 @@ internal class OutputParser : IOutputParser
                 try
                 {
                     modemData = new ModemData(outputBuffer.ToString());
-                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMSWaiting)
+                    if (modemData.ModemDataClass == ModemDataClassEnum.NewSMS)
                     {
                         ModemEventManager.ModemInternalEvent(this, _modem.ModemId, modemData.ModemResult, modemData.ModemDataClass, modemData.Data);
+                    }
+                    else if (modemData.ModemDataClass == ModemDataClassEnum.NewStatusReport)
+                    {
+                        var readMessages = PDUMessageParser.ParseRawModemOutput(modemData.Data);
+                        /*
+                         * Only one message at a time is matched in the ContainsOutputEndMarker, therefore the readMessages[0].
+                         */
+                        var incomingSMS = IncomingSms.Convert(readMessages[0]);
+                        ModemEventManager.NewSMSEvent(this, incomingSMS);
+                        await _modem.AddAsyncCommand(new ATStatusReportACKCommand(_modem));
                     }
                     else
                     {

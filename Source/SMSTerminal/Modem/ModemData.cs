@@ -1,12 +1,14 @@
 ﻿using NLog;
 using SMSTerminal.Events;
+using SMSTerminal.General;
 
-namespace SMSTerminal.General;
+namespace SMSTerminal.Modem;
 
 public enum ModemDataClassEnum
 {
     None,
-    NewSMSWaiting,
+    NewSMS,
+    NewStatusReport,
     UnknownModemData
 }
 
@@ -55,9 +57,13 @@ internal class ModemData
             /*
              * New SMS in modem memory (unsolicited)
              */
-            if (Data.Contains(ATMarkers.NewSMSArrivedMT) || Data.Contains(ATMarkers.NewSMSArrivedSM))
+            if (ATMarkers.NewMessageMarkerList.Any(Data.Contains))
             {
-                ModemDataClass = ModemDataClassEnum.NewSMSWaiting;
+                ModemDataClass = ModemDataClassEnum.NewSMS;
+            }
+            if (Data.Contains(ATMarkers.NewStatusReportArrived))
+            {
+                ModemDataClass = ModemDataClassEnum.NewStatusReport;
             }
         }
         catch (Exception e)
@@ -92,13 +98,13 @@ internal class ModemData
             return;
         }
     }
-        
+
     public override string ToString()
     {
         return $"ModemDataClass = {ModemDataClass}\n" +
                $"HasCError = {HasCError}\n" +
                $"CErrorMessage = {CErrorMessage}\n" +
-               $"ModemDataStatus = {ModemResult}" +
+               $"ModemDataStatus = {ModemResult}\n" +
                $"Data ->{Data}<-";
     }
 }

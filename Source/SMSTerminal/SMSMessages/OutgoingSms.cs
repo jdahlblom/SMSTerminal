@@ -30,6 +30,7 @@ public class OutgoingSms : IShortMessageService
     public SMSEncoding SMSEncoding { get; set; } = SMSEncoding._7bit;
     public bool RequestStatusReport { get; set; }
     public SmsDirection Direction => SmsDirection.Outgoing;
+    public DateTimeOffset PDUTimeStamp { get; set; }
     public DateTime DateCreated { get; set; }
     public DateTime DateSent { get; set; }
     public string Message { get; set; }
@@ -38,6 +39,8 @@ public class OutgoingSms : IShortMessageService
     public string SendingModem { get; set; }
     public int BatchId { get; set; }
     public int Retries { get; set; }
+    public bool IsStatusReport { get; set; }
+    public string FullPDUInformation { get; set; }
 
     public void UpRetryCount()
     {

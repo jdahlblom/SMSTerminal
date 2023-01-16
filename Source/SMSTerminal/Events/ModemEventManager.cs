@@ -1,10 +1,40 @@
-﻿using SMSTerminal.General;
-using SMSTerminal.Interfaces;
+﻿using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
 
 namespace SMSTerminal.Events;
 
 public static class ModemEventManager
 {
+    /*********************************************************************************************************************/
+    public delegate void ATCommandEventHandler(object sender, ATCommandEventArgs e);
+    public static event ATCommandEventHandler OnATCommandEvent;
+
+    /// <summary>
+    /// Messages relating to executing AT commands
+    /// </summary>
+    public static void ATCommandEvent(object sender, string modemId, string atCommand, string message, string errorMessage, ModemEventType modemEventType, ModemResultEnum resultStatus)
+    {
+        OnATCommandEvent?.Invoke(sender, new ATCommandEventArgs
+        {
+            ModemId = modemId,
+            ATCommand = atCommand,
+            Message = message,
+            ErrorMessage = errorMessage,
+            EventType = modemEventType,
+            ResultStatus = resultStatus
+        });
+    }
+
+    public static void AttachATEventListener(IATCommandListener atCommandListener)
+    {
+        OnATCommandEvent += atCommandListener.ATCommandEvent;
+    }
+
+    public static void DetachATEventListener(IATCommandListener atCommandListener)
+    {
+        OnATCommandEvent -= atCommandListener.ATCommandEvent;
+    }
+
     /*********************************************************************************************************************/
     public delegate void ModemEventHandler(object sender, ModemEventArgs e);
     public static event ModemEventHandler OnModemEvent;
@@ -67,11 +97,11 @@ public static class ModemEventManager
     /// <summary>
     /// Used when new SMS has been read
     /// </summary>
-    public static void NewSMSEvent(object sender, IShortMessageService shortMessageService, IModemMessage modemMessage)
+    public static void NewSMSEvent(object sender, IShortMessageService shortMessageService)
     {
         OnNewSMSEvent?.Invoke(sender, new SMSReceivedEventArgs
         {
-            ShortMessageService = shortMessageService, ModemMessage = modemMessage
+            ShortMessageService = shortMessageService
         });
     }
 

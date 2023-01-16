@@ -4,6 +4,7 @@ using System.IO.Ports;
 using System.Windows;
 using NLog;
 using SMSTerminal.General;
+using SMSTerminal.Modem;
 
 namespace SMSWindow;
 

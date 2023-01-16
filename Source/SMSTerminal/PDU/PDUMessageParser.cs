@@ -1,6 +1,8 @@
 ﻿using NLog;
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
+using SMSTerminal.Modem;
+using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.PDU;
 
@@ -10,7 +12,6 @@ namespace SMSTerminal.PDU;
 internal static class PDUMessageParser
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static readonly object LockParseRawModemOutput = new();
     private static readonly object LockParseSingleRaw = new();
     private static readonly object LockParseIncomingStatusReport = new();
     private static readonly object LockParseIncomingSms = new();
@@ -60,16 +61,14 @@ internal static class PDUMessageParser
          */
 
 
-        lock (LockParseRawModemOutput)
+        //"AT+CMGF=0;+CMGL=0;+CMGL=1\r\r+CMGL: 1,1,\"\",23\r\r<pdu>\r\r\r\rOK\r\r"
+        //"\r\r+CDS: 24\r\r\r\r<pdu>"
+
+        var incomingPDUMessages = new List<PDUMessage>();
+
+        if (rawModemOutput.Contains(ATCommands.ATReadUnreadSms) || rawModemOutput.Contains(ATCommands.ATReadReadSms))
         {
-            //Logger.Debug("PDU parsing {0}", rawModemOutput);
-
-            var incomingPDUMessages = new List<PDUMessage>();
-
-            if (ATCommands.ContainsSMSReadCommand(rawModemOutput))
-            {
-                ATCommands.RemoveSMSReadCommand(ref rawModemOutput);
-            }
+            ATCommands.RemoveSMSReadCommand(ref rawModemOutput);
 
             rawModemOutput = rawModemOutput.Replace(ATMarkers.OkReply, "");
 
@@ -95,11 +94,25 @@ internal static class PDUMessageParser
                     Logger.Error("Parse failed for raw modem data : ->{0}<-\n\n{1}", s, e.DecodeException());
                 }
             }
-
-            List<PDUMessage> completePDUMessages = new();
-            new PDUConcatenation().SortMessages(incomingPDUMessages, ref completePDUMessages, ref _fragmentCSMSMessages);
-            return completePDUMessages.Cast<IModemMessage>().ToList();
         }
+        else if (rawModemOutput.Contains(ATMarkers.NewStatusReportArrived))
+        {
+            try
+            {
+                var pduModemMessage = ParseSingleRaw(rawModemOutput);
+                pduModemMessage.ModemTelephone = ModemTelephone;
+                incomingPDUMessages.Add(pduModemMessage);
+            }
+            catch (Exception e)
+            {
+                //todo UGLY AS HELL
+                Logger.Error("Parse failed for raw modem data : ->{0}<-\n\n{1}", rawModemOutput, e.DecodeException());
+            }
+        }
+
+        List<PDUMessage> completePDUMessages = new();
+        new PDUConcatenation().SortMessages(incomingPDUMessages, ref completePDUMessages, ref _fragmentCSMSMessages);
+        return completePDUMessages.Cast<IModemMessage>().ToList();
     }
 
     private static PDUMessage ParseSingleRaw(string rawMessage)
@@ -108,69 +121,73 @@ internal static class PDUMessageParser
         {
             var pduModemMessage = new PDUMessage(DateTimeOffset.Now, rawMessage, ModemTimings.CSMSMaxAgeMilliSecs);
 
-            ////Logger.Debug("rawMessage {0}", rawMessage);
+            var pduLengthInOctetsWithoutSMSC = 0;
+            var pdu = "";
 
-            var array = rawMessage.Split(new[] { "\r" }, StringSplitOptions.RemoveEmptyEntries);
-            array.TrimEntries();
-            if (array.Length != 2)
+            if (rawMessage.Contains(ATMarkers.MemoryStorage))
             {
-                throw new FormatException($"Failed to disassemble data from modem. {rawMessage}");
+                var array = rawMessage.Split(new[] { "\r" }, StringSplitOptions.RemoveEmptyEntries);
+                array.TrimEntries();
+                if (array.Length != 2)
+                {
+                    throw new FormatException($"Failed to disassemble data from modem. {rawMessage}");
+                }
+
+                /*
+                 * PreAmble = (+CMGL: <index>,<stat>,<length><CR><LF><pdu>) except the <pdu>
+                 * PDU = <pdu>
+                 */
+                var preAmble = array[0];
+                pdu = array[1];
+
+                /*
+                 *  MEMORY SLOT INDEX
+                 */
+                var memIndex = int.Parse(preAmble.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)[0].Replace("+CMGL: ", ""));
+                pduModemMessage.AddMemorySlot(memIndex);
+
+                /*
+                 *  PDU LENGTH
+                 */
+                var preAmbleArray = preAmble.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                pduLengthInOctetsWithoutSMSC = int.Parse(preAmbleArray[^1]);
             }
-            /*
-             * PreAmble = (+CMGL: <index>,<stat>,<length><CR><LF><pdu>) except the <pdu>
-             * PDU = <pdu>
-             */
-            var preAmble = array[0];
-            var pdu = array[1];
-            ////Logger.Debug("PreAmble  {0}", preAmble);
-            //Logger.Debug("pdu  {0}", pdu);
-            /*
-             *  MEMORY SLOT INDEX
-             */
-            var memIndex = int.Parse(preAmble.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)[0].Replace("+CMGL: ", ""));
-            pduModemMessage.AddMemorySlot(memIndex);
-            //Logger.Debug("Memindex  {0}", memIndex);
-            /*
-             *  PDU LENGTH
-             */
-            var tmpPreAmbleArray = preAmble.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-            var pduLengthInOctetsWithoutSMSC = int.Parse(tmpPreAmbleArray[^1]);
+            else if (rawMessage.Contains(ATMarkers.NewStatusReportArrived))
+            {
+                rawMessage = rawMessage.Replace(ATMarkers.NewStatusReportArrived, "").Trim();
+                var array = rawMessage.Split("\r", StringSplitOptions.RemoveEmptyEntries);
+                pduLengthInOctetsWithoutSMSC = int.Parse(array[0]);
+                pdu = array[1];
+            }
 
-            /*Length (in PDU mode, AT+CMGF=0), the length of the actual TP data unit in octets (i.e. the RP layer SMSC address octets are not counted in the length)*/
-            //Logger.Debug("PDU length (not counting SMCS)  {0}", pduLengthInOctetsWithoutSMSC);
-
-            /*
-             *  SMSC LENGTH
-             */
+            //See ParseIncomingStatusReport example of PDU structure
             var smcsLength = Convert.ToByte(pdu[..2], 16);
-            //Logger.Debug("smcsLength {0}", smcsLength);
-            var userPduSubStringed = pdu[^(pduLengthInOctetsWithoutSMSC * 2)..];
-            //Logger.Debug("userPduSubStringed 1 {0}", userPduSubStringed);
 
             if (smcsLength > 0)
             {
                 var smcs = pdu.Substring(2, smcsLength * 2);
+
                 /*
                  *  SMSC TypeOfAddress
                  */
                 var smcsTypeOfAddress = new PDUTypeOfAddress(smcs);
                 smcsTypeOfAddress.ParseOctets();
                 pduModemMessage.SMSCTypeOfAddress = smcsTypeOfAddress;
-                //Logger.Debug("smcsTypeOfAddress {0}", smcsTypeOfAddress);
             }
+
+            pdu = pdu[^(pduLengthInOctetsWithoutSMSC * 2)..];
+
             /*
              * PDU HEADER
              */
-            var pduHeader = new PDUHeader(MessageDirection.INCOMING, Convert.ToByte(userPduSubStringed[..2], 16));
+            var pduHeader = new PDUHeader(MessageDirection.INCOMING, Convert.ToByte(pdu[..2], 16));
             pduModemMessage.PDUHeader = pduHeader;
-            //Logger.Debug("pduHeader {0}", pduHeader);
-            userPduSubStringed = userPduSubStringed[2..];
-            //Logger.Debug("userPduSubStringed 2 {0}", userPduSubStringed);
+
+            pdu = pdu[2..];
 
             pduModemMessage = pduHeader.SmsMessageType == SMSMessageType.SMS_STATUS_REPORT ?
-                ParseIncomingStatusReport(pduModemMessage, userPduSubStringed) :
-                ParseIncomingSms(pduModemMessage, userPduSubStringed);
-                
+                ParseIncomingStatusReport(pduModemMessage, pdu) :
+                ParseIncomingSms(pduModemMessage, pdu);
             return pduModemMessage;
         }
     }
@@ -251,7 +268,7 @@ internal static class PDUMessageParser
              *  PDU TIMESTAMP WHEN SC DELIVERED OR TRIED TO DELIVER OR DISPOSED THE PREVIOUS SMS
              */
             var pduTimeStampDischarge = new PDUTimeStamp(pduAfterPDUHeader[..14]);
-            pduModemMessage.PDUStatusReportSmsDischargeTimeStamp = pduTimeStampDischarge;
+            pduModemMessage.PDUStatusReportSMSDischargeTimeStamp = pduTimeStampDischarge;
             //Logger.Debug("pduTimeStampDischarge {0}", pduTimeStampDischarge);
             pduAfterPDUHeader = pduAfterPDUHeader[14..];
             //Logger.Debug("userPduSubStringed 5 {0}", userPduSubStringed);
@@ -319,7 +336,7 @@ internal static class PDUMessageParser
             pduAfterPDUHeader = pduAfterPDUHeader[2..];
             //Logger.Debug("userPduSubStringed 4i {0}", userPduSubStringed);
             /*
-             *  PDU TIMESTAMP
+             *  PDU TIMESTAMP (Service Centre Time Stamp)
              */
             var pduTimeStamp = new PDUTimeStamp(pduAfterPDUHeader[..14]);
             pduModemMessage.PDUTimeStamp = pduTimeStamp;
@@ -329,7 +346,7 @@ internal static class PDUMessageParser
             /*
              * USER DATA LENGTH 
              */
-            var userDataLength = Convert.ToByte(pduAfterPDUHeader[..2], 16);
+            //var userDataLength = Convert.ToByte(pduAfterPDUHeader[..2], 16);
             //Logger.Debug("userDataLength {0}", userDataLength);
             pduAfterPDUHeader = pduAfterPDUHeader[2..];
             //Logger.Debug("userPduSubStringed 6i {0}", userPduSubStringed);
