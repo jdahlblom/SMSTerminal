@@ -67,7 +67,7 @@ internal static class ATCommands
     public const string ATReadUnreadSms = "AT+CMGF=0;+CMGL=0"; // PDU mode and read unread SMS  
     public const string ATReadReadSms = "AT+CMGF=0;+CMGL=1"; // PDU mode and read read SMS
     //***********************************************************************
-    public const string ATSMSStatusReportACK = "AT+CNMA=0\r\n"; // 
+    public const string ATSMSStatusReportACK = "AT+CNMA=0"; // 
     //***********************************************************************
     public const string ATDeleteAllReadSms = "AT+CMGD=1,1";
     public const string ATDeleteAllSmsFromModem = "AT+CMGD=1,4";

@@ -89,12 +89,11 @@ internal class OutputParser : IOutputParser
                     {
                         var readMessages = PDUMessageParser.ParseRawModemOutput(modemData.Data);
                         /*
-                         * Only one message at a time is matched in the ContainsOutputEndMarker.
+                         * Only one message at a time is matched in the ContainsOutputEndMarker, therefore the readMessages[0].
                          */
                         var incomingSMS = IncomingSms.Convert(readMessages[0]);
-                        var cts = new CancellationTokenSource(ModemTimings.MS100);
-                        await _modem.AsyncCommandsChannel.Writer.WriteAsync(new ATStatusReportACKCommand(_modem), cts.Token);
                         ModemEventManager.NewSMSEvent(this, incomingSMS);
+                        await _modem.AddAsyncCommand(new ATStatusReportACKCommand(_modem));
                     }
                     else
                     {

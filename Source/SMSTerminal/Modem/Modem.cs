@@ -29,11 +29,13 @@ internal class Modem : IDisposable, IModem
     /// are unsolicited the modem itself doesn't know about them.
     /// The modem reads this channel and executes any commands found here.
     /// </summary>
-    internal Channel<ATCommand> AsyncCommandsChannel { get; } = Channel.CreateUnbounded<ATCommand>();
+    private readonly Channel<ATCommand> _asyncCommandsChannel = Channel.CreateUnbounded<ATCommand>();
     private readonly Channel<ModemData> _unknownModemDataChannel = Channel.CreateUnbounded<ModemData>();
     private ISerialReceiver _serialReceiver;
     public Signals Signals { get; } = new();
     public bool SendNewMessageAcknowledgement { get; set; }
+    private bool _shutdown;
+    private readonly AutoResetEvent _asyncCommandResetEvent = new AutoResetEvent(false);
 
     public Modem(GsmModemConfig gsmModemConfig)
     {
@@ -51,6 +53,8 @@ internal class Modem : IDisposable, IModem
         ReleaseUnmanagedResources();
         if (disposing)
         {
+            _shutdown = true;
+            _asyncCommandResetEvent.Set();
             _serialPort.DataReceived -= _serialReceiver.ReceiveTextOverSerial;
             _serialPort?.Close();
             _serialPort?.Dispose();
@@ -58,16 +62,50 @@ internal class Modem : IDisposable, IModem
         }
     }
 
-    AsyncCommandsChannel
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
     private static void ReleaseUnmanagedResources()
     {
         // TODO release unmanaged resources here
     }
 
-    public void Dispose()
+    internal async Task AddAsyncCommand(ATCommand atCommand)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        var cts = new CancellationTokenSource(ModemTimings.MS100);
+        await _asyncCommandsChannel.Writer.WriteAsync(atCommand, cts.Token);
+        _asyncCommandResetEvent.Set();
+    }
+
+    /// <summary>
+    /// Some output from the modem must be handled asynchronously.
+    /// For example SMS-STATUS-REPORT. These are unsolicited => modem knows nothing about them
+    /// as they are not the result of an AT command. So while reading the modem and a SMS-STATUS-REPORT
+    /// shows up the report must be acknowledged to the TE/mobile network. That command for example is added
+    /// to the AsyncCommandsChannel.
+    /// </summary>
+    /// <returns></returns>
+    private async Task AsyncCommandsExecution()
+    {
+        while (true)
+        {
+            try
+            {
+                _asyncCommandResetEvent.WaitOne();
+                if (_shutdown) break;
+
+                var cts = new CancellationTokenSource(ModemTimings.MS100);
+                var atCommand = await _asyncCommandsChannel.Reader.ReadAsync(cts.Token);
+                await ExecuteCommand(atCommand);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("AsyncCommandsExecution failed => {0}", e);
+            }
+        }
     }
 
     public ISerialReceiver SerialReceiver
@@ -93,7 +131,7 @@ internal class Modem : IDisposable, IModem
     {
         Dispose();
     }
-    
+
     private void ApplyCommSettings()
     {
         PDUMessageParser.ModemTelephone = _gsmModemConfig.ModemTelephoneNumber;
@@ -112,6 +150,7 @@ internal class Modem : IDisposable, IModem
         _serialPort.RtsEnable = _gsmModemConfig.LineSignalRts;
         _serialPort.WriteTimeout = _gsmModemConfig.WriteTimeout;
         _serialPort.ReadTimeout = _gsmModemConfig.ReadTimeout;
+        _ = Task.Run(AsyncCommandsExecution);
     }
 
     private bool PreFlightCheck()
@@ -256,7 +295,7 @@ internal class Modem : IDisposable, IModem
             {
                 await Task.Delay(ModemTimings.MS300);
             }
-            
+
             if (outgoingSms.ByteLength() > 160 && !await ExecuteCommand(new ATKeepSMSRelayLinkOpen(this)))
             {
                 Logger.Error("Failed to set Keep SMS Relay Channel Open before sending SMS.");
@@ -288,12 +327,6 @@ internal class Modem : IDisposable, IModem
         {
             Signals.SetEnded(SignalType.ReadingSMS);
         }
-    }
-
-    public async Task<bool> SendNewMessageACK()
-    {
-        var command = new ATStatusReportACKCommand(this);
-        return await ExecuteCommand(command);
     }
 
     /*
