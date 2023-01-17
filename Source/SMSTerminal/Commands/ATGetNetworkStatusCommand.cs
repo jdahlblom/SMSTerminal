@@ -14,8 +14,7 @@ internal class ATGetNetworkStatusCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[Get Network Status Command]";
-        var command = new ATCommandLine(ATCommands.ATNetworkStatusRequestCommand, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATNetworkStatusRequestCommand, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

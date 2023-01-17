@@ -14,8 +14,7 @@ internal class ATSetVerboseErrorsCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[Set Verbose Errors Command]";
-        var command = new ATCommandLine(ATCommands.UseVerboseErrorsCommand, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.UseVerboseErrorsCommand, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

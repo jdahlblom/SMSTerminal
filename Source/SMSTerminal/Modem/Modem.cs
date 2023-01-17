@@ -23,21 +23,31 @@ internal class Modem : IDisposable, IModem
     public string ModemId => _gsmModemConfig.ModemId;
     private readonly SerialPort _serialPort;
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    /// <summary>
+    /// Almost all modem output ends up here. What doesn't is output that is processed directly
+    /// when it has been read from the serial port.
+    /// </summary>
     internal Channel<ModemData> ModemDataChannel { get; } = Channel.CreateUnbounded<ModemData>();
+
     /// <summary>
     /// Sometimes commands needs to be executed in regards of unsolicited report commands, since they
     /// are unsolicited the modem itself doesn't know about them.
     /// The modem reads this channel and executes any commands found here.
     /// </summary>
     private readonly Channel<ATCommand> _asyncCommandsChannel = Channel.CreateUnbounded<ATCommand>();
+
+    /// <summary>
+    /// Where unknown modem output ends up.
+    /// </summary>
     private readonly Channel<ModemData> _unknownModemDataChannel = Channel.CreateUnbounded<ModemData>();
     private ISerialReceiver _serialReceiver;
 
     public SemaphoreSlim ReadFromModemSemaphore { get; }= new(1);
     private SemaphoreSlim SendingSMSSemaphore { get; } = new(1);
     private SemaphoreSlim ReadSMSSemaphore { get; } = new(1);
-    private readonly SemaphoreSlim _writeToModemSemaphore = new(1);
-    private readonly SemaphoreSlim _executingCommandSemaphore = new(1);
+    private SemaphoreSlim WriteToModemSemaphore { get; } = new (1);
+    private SemaphoreSlim ExecutingCommandSemaphore { get; } = new(1);
     
     private bool _shutdown;
     private readonly AutoResetEvent _asyncCommandResetEvent = new(false);
@@ -186,7 +196,7 @@ internal class Modem : IDisposable, IModem
             //Not to choke the modem
             await Task.Delay(ModemTimings.MS300);
 
-            await _executingCommandSemaphore.WaitAsync();
+            await ExecutingCommandSemaphore.WaitAsync();
             
             await WriteTextData(command.CurrentATCommand.ATCommandString + command.CurrentATCommand.TerminationString);
             var done = false;
@@ -236,7 +246,7 @@ internal class Modem : IDisposable, IModem
         }
         finally
         {
-            _executingCommandSemaphore.Release();
+            ExecutingCommandSemaphore.Release();
         }
 
         return true;
@@ -259,7 +269,7 @@ internal class Modem : IDisposable, IModem
             Logger.Debug("{0} PDUModem about to write ->{1}<-", ModemId, text);
             var byteArray = Common.UsedEncoding.GetBytes(text);
 
-            await _writeToModemSemaphore.WaitAsync();
+            await WriteToModemSemaphore.WaitAsync();
             try
             {
                 var cts = new CancellationTokenSource(ModemTimings.ModemWriteTimeout);
@@ -267,7 +277,7 @@ internal class Modem : IDisposable, IModem
             }
             finally
             {
-                _writeToModemSemaphore.Release();
+                WriteToModemSemaphore.Release();
             }
 
         }

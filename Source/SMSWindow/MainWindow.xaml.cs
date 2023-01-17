@@ -466,11 +466,12 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     {
         try
         {
-            if (!await _modemManager.ExecuteATCommand(GetSelectedModem(), TextBoxATCommand.Text, ATTerminationEnum.ATEndPart))
+            var result = await _modemManager.ExecuteATCommand(GetSelectedModem(), TextBoxATCommand.Text, ATTerminationEnum.ATEndPart);
+            if (!result.Item1)
             {
                 MessageBox.Show(this, $"Failed to execute {TextBoxATCommand.Text}. {GetSelectedModem()}", "Error", MessageBoxButton.OK);
             }
-
+            Dispatcher?.BeginInvoke((Action)(() => TextBoxModemLog.Text += Environment.NewLine + result.Item2.Replace("\r\r","\r")));
             SetFormState();
         }
         catch (Exception exception)
@@ -487,7 +488,6 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
             {
                 ButtonExecuteATCommand_OnClick(this, e);
             }
-
             SetFormState();
         }
         catch (Exception exception)
@@ -553,17 +553,5 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         ComboBoxMemory3Type.ItemsSource = null;
         ComboBoxMemory3Type.ItemsSource = modemMemoryList[2].MemoryTypesAvailable;
         ComboBoxMemory3Type.SelectedValue = modemMemoryList[2].MemoryType;
-    }
-
-    private void ButtonDev_OnClick(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            
-        }
-        catch (Exception exception)
-        {
-            ShowErrorMessageBox(exception);
-        }
     }
 }

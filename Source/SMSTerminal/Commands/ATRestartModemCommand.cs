@@ -13,8 +13,7 @@ internal class ATRestartModemCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[AT Restart Modem Command]";
-        var command = new ATCommandLine(ATCommands.ATRestartModem, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATRestartModem, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

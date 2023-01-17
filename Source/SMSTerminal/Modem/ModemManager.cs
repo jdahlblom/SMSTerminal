@@ -244,14 +244,15 @@ public class ModemManager : IDisposable, IModemInternalListener
         return false;
     }
 
-    public async Task<bool> ExecuteATCommand(string modemId, string atCommand, string terminationString)
+    public async Task<Tuple<bool, string>> ExecuteATCommand(string modemId, string atCommand, string terminationString)
     {
         foreach (var modem in _modems.Where(modem => modem.ModemId == modemId))
         {
             var command = new ATGenericCommand(modem, atCommand, terminationString);
-            return await modem.ExecuteCommand(command);
+            var result = await modem.ExecuteCommand(command);
+            return new Tuple<bool, string>(result, command.CurrentATCommand.ModemData.Data);
         }
-        return false;
+        return new Tuple<bool, string>(false,"");
     }
 
     public async Task<List<ModemMemory>> ReadModemMemoryStats(string modemId)

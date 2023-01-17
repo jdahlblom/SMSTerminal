@@ -107,6 +107,11 @@ internal static class ATCommands
     public const string ATGetChosenMemoryUsage = "AT+CPMS?";
     public const string ATSetMemoryTypesUsed = "AT+CPMS="; //AT+CPMS="ME","ME","ME"
     //***********************************************************************
+    public const string ATGetStatusInformationStruct = "AT+CIND=?";
+    public const string ATGetStatusInformation = "AT+CIND?";
+    public const string ATSetStatusInformationURCOn = "AT+CIND=1";
+    public const string ATSetStatusInformationURCOff = "AT+CIND=0";
+    //***********************************************************************
 
 
     private static readonly object LockContainsResultCode = new();

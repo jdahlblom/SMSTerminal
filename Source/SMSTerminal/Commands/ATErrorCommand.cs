@@ -14,8 +14,7 @@ internal class ATErrorCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[AT Error Command]";
-        var command = new ATCommandLine(ATCommands.ATForceError, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATForceError, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

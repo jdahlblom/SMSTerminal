@@ -13,8 +13,7 @@ internal class ATKeepSMSRelayLinkOpen : ATCommand
     {
         Modem = modem;
         CommandType = "[AT SMS Relay Link Command]";
-        var command = new ATCommandLine(ATCommands.ATKeepSMSRelayLinkOpen, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATKeepSMSRelayLinkOpen, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

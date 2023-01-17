@@ -14,8 +14,7 @@ internal class ATStatusReportACKCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[AT ACK New Message Command]";
-        var command = new ATCommandLine(ATCommands.ATSMSStatusReportACK, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATSMSStatusReportACK, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

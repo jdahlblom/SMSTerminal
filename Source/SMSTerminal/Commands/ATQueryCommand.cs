@@ -14,8 +14,7 @@ internal class ATQueryCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[AT Test Command]";
-        var command = new ATCommandLine(ATCommands.ATQueryCommand, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATQueryCommand, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

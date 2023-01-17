@@ -15,8 +15,7 @@ internal class ATSetGSMPhase2Command : ATCommand
     {
         Modem = modem;
         CommandType = "[Set GSM Phase 2 Command]";
-        var command = new ATCommandLine(ATCommands.ATGSMPhase2Command, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGSMPhase2Command, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

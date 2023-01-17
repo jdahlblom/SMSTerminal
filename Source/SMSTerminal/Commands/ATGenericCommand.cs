@@ -12,8 +12,7 @@ internal class ATGenericCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[AT Generic Command]";
-        var command = new ATCommandLine(atCommand, terminationString);
-        ATCommandsList.Add(command);
+        ATCommandsList.Add(new ATCommandLine(atCommand, terminationString));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)

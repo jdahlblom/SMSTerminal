@@ -17,10 +17,8 @@ internal class ATSetPINCommand : ATCommand
         Modem = modem;
         PIN1Code = pinCode;
         CommandType = "[Set PIN Command]";
-        var command = new ATCommandLine(ATCommands.ATPINStatusQueryCommand, ATCommands.ATEndPart);
-        var command2 = new ATCommandLine(ATCommands.ATPINAuthCommand + PIN1Code, ATCommands.ATEndPart);
-        ATCommandsList.Add(command);
-        ATCommandsList.Add(command2);
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATPINStatusQueryCommand, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine(ATCommands.ATPINAuthCommand + PIN1Code, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)
