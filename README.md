@@ -1,5 +1,12 @@
 # SMSTerminal
- Basic C# SMS library and test application (SMSWindow) for handling SMS transmission using SMS Terminals/Modems.
+SMS library for handling SMS communication using SMS Terminals/Modems.
+<br/>
+<br/>
+* Asynchronous
+* C#
+* Concatenated SMS
+* Includes test application
+* Uses PDU format
 <br/>
 <br/>
 Tested using Telic NT910G & CT63 over RS232. 
@@ -12,6 +19,5 @@ SMSTerminal supports following encodings :
 * 8-bit
 * UCS2
 
-Handles concatenated SMS. Sends and receives SMS using the PDU format.
 
 C# GSM MODEM SMS NET 6
