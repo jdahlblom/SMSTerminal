@@ -7,6 +7,7 @@ SMS library for handling SMS communication using SMS Terminals/Modems.
 * Concatenated SMS
 * Includes test application
 * Uses PDU format
+* Handles delivery reports (SMS-STATUS-REPORT)
 <br/>
 <br/>
 Tested using Telic NT910G & CT63 over RS232. 
