@@ -112,7 +112,8 @@ internal static class ATCommands
     public const string ATSetStatusInformationURCOn = "AT+CIND=1";
     public const string ATSetStatusInformationURCOff = "AT+CIND=0";
     //***********************************************************************
-
+    public const string ATSetEchoOn = "ATE1"; //"ATE0" = off
+    //***********************************************************************
 
     private static readonly object LockContainsResultCode = new();
     internal static bool ContainsEscapeChars(string s)

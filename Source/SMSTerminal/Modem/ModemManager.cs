@@ -130,6 +130,14 @@ public class ModemManager : IDisposable, IModemInternalListener
             };
             modem.SerialReceiver = serialReceiver;
             await modem.Open(waitTimeAfterOpen);
+
+            if (!await modem.ExecuteCommand(new ATEchoOnCommand(modem)))
+            {
+                Logger.Error($"Modem {modem.ModemId} could turn on ECHO, SMSTerminal does not work without ECHO. Modem not added to pool.");
+                modem.Dispose();
+                return false;
+            }
+
             if (!await modem.ExecuteCommand(new ATQueryCommand(modem)))
             {
                 Logger.Error($"Modem {modem.ModemId} does not answer AT command. Modem not added to pool.");
