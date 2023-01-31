@@ -1,5 +1,5 @@
 # SMSTerminal
-SMS library for handling SMS communication using SMS Terminals/Modems.
+SMS library for handling SMS communication using GSM Terminals/Modems.
 <br/>
 <br/>
 * Asynchronous
