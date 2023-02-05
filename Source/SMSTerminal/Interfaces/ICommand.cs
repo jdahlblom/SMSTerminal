@@ -25,13 +25,13 @@ internal interface ICommand
     /// <summary>
     /// Output friendly string describing the command.
     /// </summary>
-    string CommandType { get; }        
-        
+    string CommandType { get; }
+
     /// <summary>
     /// Retrieves AT command command index is pointing at.
     /// Calling NextATCommand will increase command index.
     /// </summary>
-    ATCommandLine CurrentATCommand { get; }
+    ATCommandLine CurrentATCommand();
 
     /// <summary>
     /// Once this has been called also CurrentATCommand

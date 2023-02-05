@@ -26,7 +26,7 @@ public class GsmModemConfig
     public string ModemModel { get; set; }
     public string IMSI { get; set; }
     public string ICCID { get; set; }
-    public string ModemId => $"{ModemManufacturer} {ModemModel}@{ComPort}";
+    public string ModemId => $"{ModemManufacturer}.{ModemModel}@{ComPort}";
     //public string ModemId => $"{IMSI}@{ComPort}";
     public bool Enabled { get; set; }
     public string PIN1 { get; set; }
@@ -35,4 +35,25 @@ public class GsmModemConfig
     public bool UseCallForwarding { get; set; }
     public bool AutoDisconnectIncomingCall { get; set; }
 
+
+    public static GsmModemConfig Consume(GsmModemConfig gsmModemConfig)
+    {
+        var result = new GsmModemConfig
+        {
+            ComPort = gsmModemConfig.ComPort,
+            BaudRate = gsmModemConfig.BaudRate,
+            DataBits = gsmModemConfig.DataBits,
+            Stopbits = gsmModemConfig.Stopbits,
+            Parity = gsmModemConfig.Parity,
+            LineSignalDtr = gsmModemConfig.LineSignalDtr,
+            LineSignalRts = gsmModemConfig.LineSignalRts,
+            Handshake = gsmModemConfig.Handshake,
+            PIN1 = gsmModemConfig.PIN1,
+            DeleteSMSFromModemWhenRead = gsmModemConfig.DeleteSMSFromModemWhenRead,
+            AutoDisconnectIncomingCall = gsmModemConfig.AutoDisconnectIncomingCall,
+            UseCallForwarding = gsmModemConfig.UseCallForwarding,
+            CallForwardingTelephone = gsmModemConfig.CallForwardingTelephone
+        };
+        return result;
+    }
 }

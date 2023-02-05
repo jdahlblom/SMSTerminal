@@ -13,6 +13,16 @@ internal class ATCommandLine
         StringHolder = stringHolder;
     }
 
+    public ATCommandLine(string atCommandInformation, string atCommandString, string terminationString, int numberHolder = 0, string stringHolder = null)
+    {
+        ATCommandInformation = atCommandInformation;
+        ATCommandString = atCommandString;
+        TerminationString = terminationString;
+        NumberHolder = numberHolder;
+        StringHolder = stringHolder;
+    }
+
+    public string ATCommandInformation { get; }
     public string ATCommandString { get; }
     public string TerminationString { get; }
     private bool HasResult => ModemData != null && ModemData.ModemResult != ModemResultEnum.None;

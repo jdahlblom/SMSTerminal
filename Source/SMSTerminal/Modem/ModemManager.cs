@@ -258,7 +258,7 @@ public class ModemManager : IDisposable, IModemInternalListener
         {
             var command = new ATGenericCommand(modem, atCommand, terminationString);
             var result = await modem.ExecuteCommand(command);
-            return new Tuple<bool, string>(result, command.CurrentATCommand.ModemData.Data);
+            return new Tuple<bool, string>(result, command.CurrentATCommand().ModemData.Data);
         }
         return new Tuple<bool, string>(false,"");
     }

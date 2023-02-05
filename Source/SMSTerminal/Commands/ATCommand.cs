@@ -8,11 +8,20 @@ namespace SMSTerminal.Commands;
 internal abstract class ATCommand : ICommand
 {
     protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    public string CommandType { get; protected init; }
+    public string CommandType { get; protected set; }
     protected readonly List<ATCommandLine> ATCommandsList = new();
     protected IModem Modem { get; set; }
-    public ATCommandLine CurrentATCommand => ATCommandsList[CommandIndex];
     protected bool HasNextATCommand => ATCommandsList.Count - 1 > CommandIndex;
+    
+    public ATCommandLine CurrentATCommand()
+    {
+            var atCommandLine = ATCommandsList[CommandIndex];
+            if (!string.IsNullOrEmpty(atCommandLine.ATCommandInformation))
+            {
+                CommandType = atCommandLine.ATCommandInformation;
+            }
+            return atCommandLine;
+    }
 
     /// <summary>
     /// Returns next AT command, if none exists it returns null.
@@ -22,7 +31,12 @@ internal abstract class ATCommand : ICommand
     {
         if (ATCommandsList.Count > CommandIndex - 1)
         {
-            return ATCommandsList[++CommandIndex];
+            var atCommandLine = ATCommandsList[++CommandIndex];
+            if (!string.IsNullOrEmpty(atCommandLine.ATCommandInformation))
+            {
+                CommandType = atCommandLine.ATCommandInformation;
+            }
+            return atCommandLine;
         }
         return null;
     }

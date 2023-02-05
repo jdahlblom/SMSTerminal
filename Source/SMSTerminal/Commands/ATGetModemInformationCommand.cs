@@ -18,10 +18,10 @@ internal class ATGetModemInformationCommand : ATCommand
     {
         Modem = modem;
         CommandType = "[Get Modem Information Command]";
-        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetModemManufacturerCommand,ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetModemModelCommand, ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetIMSICommand, ATCommands.ATEndPart));
-        ATCommandsList.Add(new ATCommandLine(ATCommands.ATGetICCIDCommand, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine("Get Modem Manufacturer Command", ATCommands.ATGetModemManufacturerCommand,ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine("Get Modem Model Command", ATCommands.ATGetModemModelCommand, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine("Get Modem IMSI Command", ATCommands.ATGetIMSICommand, ATCommands.ATEndPart));
+        ATCommandsList.Add(new ATCommandLine("Get Modem ICCID Command", ATCommands.ATGetICCIDCommand, ATCommands.ATEndPart));
     }
 
     public override async Task<CommandProgress> Process(ModemData modemData)
@@ -61,8 +61,6 @@ internal class ATGetModemInformationCommand : ATCommand
             Logger.Error(e);
             return CommandProgress.Error;
         }
-
-        return CommandProgress.Finished;
     }
 
     private void ParseData(string data)

@@ -15,10 +15,33 @@ public partial class SettingsWindow : Window, IDisposable
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private readonly GsmModemConfig _gsmModemConfig = new();
+    private static GsmModemConfig _lastGsmModemConfig;
 
     public SettingsWindow()
     {
         InitializeComponent();
+        if (_lastGsmModemConfig == null)
+        {
+            _gsmModemConfig.BaudRate = BaudRate.Baudrate115200;
+            _gsmModemConfig.ComPort = "COM4";
+            //_gsmModemConfig.ModemTelephoneNumber
+            _gsmModemConfig.DataBits = 8;
+            _gsmModemConfig.Enabled = true;
+            _gsmModemConfig.Parity = Parity.None;
+            _gsmModemConfig.Stopbits = StopBits.One;
+            _gsmModemConfig.LineSignalDtr = true;
+            _gsmModemConfig.LineSignalRts = true;
+            _gsmModemConfig.Handshake = Handshake.XOnXOff;
+            _gsmModemConfig.PIN1 = "0000";
+            _gsmModemConfig.ReadTimeout = 10000;
+            _gsmModemConfig.WriteTimeout = 10000;
+            _gsmModemConfig.DeleteSMSFromModemWhenRead = true;
+        }
+        else
+        {
+            _gsmModemConfig = _lastGsmModemConfig;
+        }
+        ShowSettings();
     }
 
     public SettingsWindow(GsmModemConfig gsmTerminalConfig)
@@ -31,7 +54,7 @@ public partial class SettingsWindow : Window, IDisposable
     public void Dispose()
     {
     }
-        
+
     private void SetFormState()
     {
 
@@ -46,13 +69,14 @@ public partial class SettingsWindow : Window, IDisposable
     {
 
     }
-        
-    public GsmModemConfig Settings => _gsmModemConfig;
 
+    public GsmModemConfig Settings => _gsmModemConfig;
+    
     private void ShowSettings()
     {
         try
         {
+            _lastGsmModemConfig =  GsmModemConfig.Consume(_gsmModemConfig);
             TextBoxComPort.Text = _gsmModemConfig.ComPort;
             ComboBoxBaudRate.SelectedValue = _gsmModemConfig.BaudRate;
             TextBoxDataBits.Text = _gsmModemConfig.DataBits.ToString();
@@ -97,7 +121,7 @@ public partial class SettingsWindow : Window, IDisposable
         }
     }
 
-    private void ButtonSave_OnClick(object sender, RoutedEventArgs e)
+    private void ButtonConnect_OnClick(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -110,7 +134,7 @@ public partial class SettingsWindow : Window, IDisposable
             {
                 throw new Exception("Invalid Data Bits");
             }
-                
+
             if (CheckBoxUseCallForwarding.IsChecked == true && !TextBoxCallForwardTph.Text.IsValidTph())
             {
                 throw new Exception("Invalid Call Forwarding Telephone Number");

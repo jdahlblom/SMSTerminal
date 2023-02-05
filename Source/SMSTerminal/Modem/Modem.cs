@@ -198,7 +198,7 @@ internal class Modem : IDisposable, IModem
 
             await ExecutingCommandSemaphore.WaitAsync();
             
-            await WriteTextData(command.CurrentATCommand.ATCommandString + command.CurrentATCommand.TerminationString);
+            await WriteTextData(command.CurrentATCommand().ATCommandString + command.CurrentATCommand().TerminationString);
             var done = false;
 
             while (!done)
@@ -215,7 +215,7 @@ internal class Modem : IDisposable, IModem
                         }
                     case CommandProgress.NextCommand:
                         {
-                            await WriteTextData(command.NextATCommand().ATCommandString + command.CurrentATCommand.TerminationString);
+                            await WriteTextData(command.NextATCommand().ATCommandString + command.CurrentATCommand().TerminationString);
                             break;
                         }
                     case CommandProgress.NotExpectedDataReply:

@@ -22,7 +22,7 @@ namespace SMSWindow;
 public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSListener, IATCommandListener
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private GsmModemConfig _gsmModemConfig = new();
+    //private GsmModemConfig _gsmModemConfig = new();
     private int _messagedId;
     private readonly string _testStringLatin = "ABCDEFGHJIKLMNOPQRSTUVWXYZÅÄÖ";
     private readonly string _testStringPunjabi = "ਬਸੰਤ ਸਾਲ ਦਾ ਸਭ ਤੋਂ ਸ਼ਾਨਦਾਰ ਸਮਾਂ ਹੈ।";
@@ -36,21 +36,6 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         ModemEventManager.AttachNewSMSListener(this);
         ModemEventManager.AttachModemEventListener(this);
         ModemEventManager.AttachATEventListener(this);
-
-        _gsmModemConfig.BaudRate = BaudRate.Baudrate115200;
-        _gsmModemConfig.ComPort = "COM4";
-        _gsmModemConfig.ModemTelephoneNumber = "+358400205687";
-        _gsmModemConfig.DataBits = 8;
-        _gsmModemConfig.Enabled = true;
-        _gsmModemConfig.Parity = Parity.None;
-        _gsmModemConfig.Stopbits = StopBits.One;
-        _gsmModemConfig.LineSignalDtr = true;
-        _gsmModemConfig.LineSignalRts = true;
-        _gsmModemConfig.Handshake = Handshake.XOnXOff;
-        _gsmModemConfig.PIN1 = "0000";
-        _gsmModemConfig.ReadTimeout = 10000;
-        _gsmModemConfig.WriteTimeout = 10000;
-        _gsmModemConfig.DeleteSMSFromModemWhenRead = true;
     }
 
     public void Dispose()
@@ -108,7 +93,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         }
         Dispatcher?.BeginInvoke((Action)(() => TextBoxIncomingSMS.Text = TextBoxIncomingSMS.Text + Environment.NewLine + message));
     }
-    
+
     public void ATCommandEvent(object sender, ATCommandEventArgs e)
     {
         if (e.ResultStatus.ContainsError())
@@ -133,8 +118,6 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
 
     private void SetFormState()
     {
-        ButtonConnect.IsEnabled = !_modemManager.HasModems;
-        ButtonSettings.IsEnabled = !_modemManager.HasModems;
         ButtonNetworkStatus.IsEnabled = _modemManager.HasModems;
         ButtonSend.IsEnabled = _modemManager.HasModems;
         ButtonReadNewSMS.IsEnabled = _modemManager.HasModems;
@@ -156,25 +139,35 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         //ButtonClear.IsEnabled = !string.IsNullOrEmpty(TextBox.Text);
     }
 
-    private async void ButtonConnect_OnClick(object sender, RoutedEventArgs e)
+    private async void ButtonConnectModem_OnClick(object sender, RoutedEventArgs e)
     {
-        Mouse.OverrideCursor = Cursors.Wait;
         try
         {
-            if (!await _modemManager.AddTerminal(_gsmModemConfig))
+            var settingsWindow = new SettingsWindow();
+            if (settingsWindow.ShowDialog() == true)
             {
-                MessageBox.Show(this, "Failed to add modem.", "Error", MessageBoxButton.OK);
+                var gsmModemConfig = settingsWindow.Settings;
+
+                try
+                {
+                    Mouse.OverrideCursor = Cursors.Wait;
+                    if (!await _modemManager.AddTerminal(gsmModemConfig))
+                    {
+                        MessageBox.Show(this, "Failed to add modem.", "Error", MessageBoxButton.OK);
+                    }
+                }
+                finally
+                {
+                    Mouse.OverrideCursor = Cursors.Arrow;
+                }
             }
+
             RefreshModems();
             SetFormState();
         }
         catch (Exception exception)
         {
             ShowErrorMessageBox(exception);
-        }
-        finally
-        {
-            Mouse.OverrideCursor = Cursors.Arrow;
         }
     }
 
@@ -195,7 +188,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
-            _modemManager.CloseTerminals();
+            _modemManager.CloseTerminal(ComboBoxModem.SelectedValue.ToString());
             RefreshModems();
             SetFormState();
         }
@@ -355,22 +348,6 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
         SetFormState();
     }
 
-    private void ButtonSettings_OnClick(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var settingsWindow = new SettingsWindow(_gsmModemConfig);
-            if (settingsWindow.ShowDialog() == true)
-            {
-                _gsmModemConfig = settingsWindow.Settings;
-            }
-        }
-        catch (Exception exception)
-        {
-            ShowErrorMessageBox(exception);
-        }
-    }
-
     private async void ButtonReadNewSMS_OnClick(object sender, RoutedEventArgs e)
     {
         try
@@ -471,7 +448,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
             {
                 MessageBox.Show(this, $"Failed to execute {TextBoxATCommand.Text}. {GetSelectedModem()}", "Error", MessageBoxButton.OK);
             }
-            Dispatcher?.BeginInvoke((Action)(() => TextBoxModemLog.Text += Environment.NewLine + result.Item2.Replace("\r\r","\r")));
+            Dispatcher?.BeginInvoke((Action)(() => TextBoxModemLog.Text += Environment.NewLine + result.Item2.Replace("\r\r", "\r")));
             SetFormState();
         }
         catch (Exception exception)
@@ -479,7 +456,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
             ShowErrorMessageBox(exception);
         }
     }
-    
+
     private void TextBoxATCommand_OnKeyDown(object sender, KeyEventArgs e)
     {
         try

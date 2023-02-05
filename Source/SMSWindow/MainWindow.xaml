@@ -106,10 +106,9 @@
             <TabItem  Header="Connect">
                 <TabPanel HorizontalAlignment="Right">
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
-                        <StackPanel Orientation="Horizontal">
-                            <Button Name="ButtonConnect" Content="Connect Modem" Height="22" Margin="0,5,10,5" Click="ButtonConnect_OnClick"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Name="ButtonConnectModem" Content="Connect Modem" Height="22" Margin="0,5,10,5" Click="ButtonConnectModem_OnClick"/>
                             <Button Name="ButtonDisconnect" Content="Disconnect Modem" Height="22" Margin="0,5,10,5" Click="ButtonDisconnect_OnClick"/>
-                            <Button Name="ButtonSettings" Content="Settings" Height="22" Margin="0,5,10,5" Click="ButtonSettings_OnClick" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Name="ButtonErrorCommand" Content="Error Command" Height="22" Margin="0,5,10,5" Click="ButtonErrorCommand_OnClick" />
