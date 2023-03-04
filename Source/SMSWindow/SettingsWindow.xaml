@@ -93,11 +93,11 @@
             </DockPanel>
             <DockPanel>
                 <Label Content="Use Call Forwarding" VerticalAlignment="Center"/>
-                <CheckBox Name="CheckBoxUseCallForwarding" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"></CheckBox>
+                <CheckBox Name="CheckBoxUseCallForwarding" IsChecked="True" IsEnabled="False" HorizontalAlignment="Right" VerticalAlignment="Center"></CheckBox>
             </DockPanel>
             <DockPanel>
                 <Label Content="Call Forwarding Tph" VerticalAlignment="Center"/>
-                <TextBox Name="TextBoxCallForwardTph"  Text="+123123456789" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Width="150" Margin="0,5,0,5" ></TextBox>
+                <TextBox Name="TextBoxCallForwardTph"  Text="+123123456789" IsEnabled="False" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Width="150" Margin="0,5,0,5" ></TextBox>
             </DockPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
                 <Button Name="ButtonConnect" Content="Connect" Margin="0,0,5,0" Click="ButtonConnect_OnClick"/>

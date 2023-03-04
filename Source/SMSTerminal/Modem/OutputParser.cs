@@ -95,6 +95,12 @@ internal class OutputParser : IOutputParser
                         ModemEventManager.NewSMSEvent(this, incomingSMS);
                         await _modem.AddAsyncCommand(new ATStatusReportACKCommand(_modem));
                     }
+                    else if(modemData.Data.Contains(ATMarkers.IncomingCall1) || modemData.Data.Contains(ATMarkers.IncomingCall2))
+                    {
+                        var cts = new CancellationTokenSource(ModemTimings.MS100);
+                        await _modem.AddAsyncCommand(new ATDisconnectCallCommand(_modem, _modem.GsmModemConfig.AutoDisconnectIncomingCall, 
+                            _modem.GsmModemConfig.UseCallForwarding, _modem.GsmModemConfig.CallForwardingTelephone));
+                    }
                     else
                     {
                         var cts = new CancellationTokenSource(ModemTimings.MS100);

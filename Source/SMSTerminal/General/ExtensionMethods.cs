@@ -97,7 +97,9 @@ public static class ExtensionMethods
         return SmsFunctions.StatusReportCDSIsComplete(message, out _) || 
                ATMarkers.NewMessageMarkerList.Any(message.Contains) ||
                ATCommands.ContainsResultCode(message) ||
-               message.Contains(ATMarkers.ReadyPrompt);
+               message.Contains(ATMarkers.ReadyPrompt) ||
+               message.Contains(ATMarkers.IncomingCall1)||
+               message.Contains(ATMarkers.IncomingCall2) ;
     }
 
     public static string DecodeException(this Exception e)

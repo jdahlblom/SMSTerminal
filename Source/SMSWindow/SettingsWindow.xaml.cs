@@ -47,7 +47,9 @@ public partial class SettingsWindow : Window, IDisposable
     public SettingsWindow(GsmModemConfig gsmTerminalConfig)
     {
         InitializeComponent();
-        _gsmModemConfig = gsmTerminalConfig;
+        _gsmModemConfig = new GsmModemConfig();
+        _gsmModemConfig = GsmModemConfig.Consume(gsmTerminalConfig);
+        _gsmModemConfig.ClearModemModemInformation();
         ShowSettings();
     }
 

@@ -325,28 +325,5 @@ internal class Modem : IDisposable, IModem
             ReadSMSSemaphore.Release();
         }
     }
-
-    /*
-    public void ApplyCallForwardingSettings()
-    {
-        
-    }
-
-    private CallForwardingStatus CheckCallForwardingOnModem()
-    {
-        
-    }
-
-
-    private void DisconnectIncomingCall()
-    {
-        
-    }
-    
-    private bool ContainsIncomingCallIndication(string text)
-    {
-        
-    }
-    */
 }
 

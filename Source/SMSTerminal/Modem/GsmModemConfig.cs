@@ -56,4 +56,12 @@ public class GsmModemConfig
         };
         return result;
     }
+
+    public void ClearModemModemInformation()
+    {
+        ModemManufacturer = "";
+        ModemModel = "";
+        IMSI = "";
+        ICCID = "";
+    }
 }

@@ -31,6 +31,9 @@ public static class ATMarkers
     public const string CMSErrorKeyword = "+CMS ERROR:";
     public const string CMEErrorKeyword = "+CME ERROR:";
     public const string ErrorKeyword = "ERROR";
+    //***********************************************************************
+    public const string IncomingCall1 = "RING\r\r\r";
+    public const string IncomingCall2 = "+CRING\r\r\r";
 }
 
 public class ATTerminationEnum

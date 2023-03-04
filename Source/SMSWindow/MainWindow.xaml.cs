@@ -28,6 +28,7 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     private readonly string _testStringPunjabi = "ਬਸੰਤ ਸਾਲ ਦਾ ਸਭ ਤੋਂ ਸ਼ਾਨਦਾਰ ਸਮਾਂ ਹੈ।";
     private readonly ModemManager _modemManager = new();
     private bool _formLoaded = false;
+    private GsmModemConfig _gsmModemConfig;
 
     public MainWindow()
     {
@@ -143,17 +144,19 @@ public partial class MainWindow : Window, IModemListener, IDisposable, INewSMSLi
     {
         try
         {
-            var settingsWindow = new SettingsWindow();
+            SettingsWindow settingsWindow = null;
+            settingsWindow = _gsmModemConfig != null ? new SettingsWindow(_gsmModemConfig) : new SettingsWindow();
+
             if (settingsWindow.ShowDialog() == true)
             {
-                var gsmModemConfig = settingsWindow.Settings;
+                _gsmModemConfig = settingsWindow.Settings;
 
                 try
                 {
                     Mouse.OverrideCursor = Cursors.Wait;
-                    if (!await _modemManager.AddTerminal(gsmModemConfig))
+                    if (!await _modemManager.AddTerminal(_gsmModemConfig))
                     {
-                        MessageBox.Show(this, "Failed to add modem.", "Error", MessageBoxButton.OK);
+                        MessageBox.Show(this, $"Failed to add modem at {_gsmModemConfig.ComPort}", "Error", MessageBoxButton.OK);
                     }
                 }
                 finally
