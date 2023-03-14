@@ -15,6 +15,9 @@ You can set startup parameter to the tph number you want to send to via the test
 SMSWindow.exe 0501234567
 <br/>
 <br/>
+With SMSTerminal you can have multiple terminals connected.
+<br/>
+<br/>
 SMSTerminal supports following encodings :
 
 * 7-bit 

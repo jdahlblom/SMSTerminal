@@ -5,6 +5,9 @@ using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
+/// <summary>
+/// Abstract base for AT Commands.
+/// </summary>
 internal abstract class ATCommand : ICommand
 {
     protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();

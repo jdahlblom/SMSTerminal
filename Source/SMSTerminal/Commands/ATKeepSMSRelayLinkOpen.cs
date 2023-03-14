@@ -5,7 +5,7 @@ using SMSTerminal.Modem;
 namespace SMSTerminal.Commands;
 
 /// <summary>
-/// This speeds up SMS execution.
+/// This speeds up SMS execution keeping relay link open between sending.
 /// </summary>
 internal class ATKeepSMSRelayLinkOpen : ATCommand
 {

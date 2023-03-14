@@ -3,6 +3,9 @@ using SMSTerminal.Modem;
 
 namespace SMSTerminal.Commands;
 
+/// <summary>
+/// Holds the actual AT command and termination character.
+/// </summary>
 internal class ATCommandLine
 {
     public ATCommandLine(string atCommandString, string terminationString, int numberHolder = 0, string stringHolder = null)

@@ -5,15 +5,14 @@ using SMSTerminal.Modem;
 namespace SMSTerminal.Commands;
 
 /// <summary>
-/// Simple AT "ping" command to see that the
-/// modem is up and running.
+/// SMS-REPORTS must be acknowledged to the MS, this command does that.
 /// </summary>
 internal class ATStatusReportACKCommand : ATCommand
 {
     public ATStatusReportACKCommand(IModem modem)
     {
         Modem = modem;
-        CommandType = "[AT ACK New Message Command]";
+        CommandType = "[AT ACK New SMS-REPORT Command]";
         ATCommandsList.Add(new ATCommandLine(ATCommands.ATSMSStatusReportACK, ATCommands.ATEndPart));
     }
 
