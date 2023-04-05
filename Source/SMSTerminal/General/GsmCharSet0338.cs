@@ -70,6 +70,11 @@ public class GsmCharSet0338
     {
         return _extendedList.ContainsValue(s.ToString());
     }
+    
+    public int ExtendedCharCount(string s)
+    {
+        return s.Count(c => IsExtended(c));
+    }
 
     public bool IsBase(string s)
     {
