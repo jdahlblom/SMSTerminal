@@ -1,4 +1,7 @@
 ﻿using System.Collections;
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
 using NLog;
 using SMSTerminal.General;
 
@@ -26,14 +29,14 @@ public class PDUEncoder
         SMSValidityPeriod = new PDUValidityPeriod(PDUHeader, new TimeSpan(daysValid, 0, 0, 0));
     }
 
-    public  string[] MakePDU()
+    public string[] MakePDU(bool useNewMethod = false)
     {
-        return NeedsToBeSplit(Message, SmsEncoding) ? GetConcatenatedMessagePDU() : GetSingleMessagePDU();
+        return NeedsToBeSplit(Message, SmsEncoding) ? GetConcatenatedMessagePDU() : GetSingleMessagePDU(useNewMethod);
     }
 
 
     /* ~ [PDU Header] + [PDU PARAMS] + [ENCODED MESSAGE] */
-    private string[] GetSingleMessagePDU()
+    private string[] GetSingleMessagePDU(bool useNewMethod)
     {
         if (string.IsNullOrEmpty(Message))
         {
@@ -44,7 +47,7 @@ public class PDUEncoder
             throw new ArgumentException($"Single SMS Message Length Invalid ({(string.IsNullOrEmpty(Message) ? "null" : Message.Length.ToString())}) " +
                                         $"Max message length in characters: 7-bit 160, 8-bit 140, UTF-16 70. This message was {Message.Length} characters long and encoding set to {SmsEncoding}");
         }
-            
+
         /*
          * PDU Octet
          */
@@ -58,7 +61,7 @@ public class PDUEncoder
 
     /* ~ [PDU Header] + [PDU PARAMS] + [USER DATA HEADER] + [ENCODED MESSAGE] */
 
-    private  string[] GetConcatenatedMessagePDU()
+    private string[] GetConcatenatedMessagePDU()
     {
         if (string.IsNullOrEmpty(Message))
         {
@@ -70,25 +73,25 @@ public class PDUEncoder
         switch (SmsEncoding)
         {
             case SMSEncoding._7bit:
-            {
-                SplitMessageBits7();
-                break;
-            }
+                {
+                    SplitMessageBits7();
+                    break;
+                }
             case SMSEncoding._8bit:
-            {
-                SplitMessageBits8();
-                break;
-            }
+                {
+                    SplitMessageBits8();
+                    break;
+                }
             case SMSEncoding._UCS2:
-            {
-                SplitMessageUCS2();
-                break;
-            }
+                {
+                    SplitMessageUCS2();
+                    break;
+                }
             case SMSEncoding.ReservedMask:
             default:
-            {
-                throw new Exception($"Unsupported encoding chosen : {SmsEncoding}.");
-            }
+                {
+                    throw new Exception($"Unsupported encoding chosen : {SmsEncoding}.");
+                }
         }
         /*
          * PDU Header (same in all parts of the concat message)
@@ -118,7 +121,7 @@ public class PDUEncoder
         }
         return result.ToArray(typeof(string)) as string[];
     }
-        
+
     private string GetPDU(PDUUserDataHeader userDataHeader, string message)
     {
         //Logger.Debug("SMSC Length = ->00<-");
@@ -165,47 +168,47 @@ public class PDUEncoder
         switch (SmsEncoding)
         {
             case SMSEncoding._7bit:
-            {
-                var messageLengthInt = CalculateMessageLength7Bit(userDataHeader, message);
-                var messageLength = Convert.ToString(messageLengthInt, 16).PadLeft(2, '0');
-                //Logger.Debug("[7-bit] TP-User-Data-Length (msg len) = ->{0}<- decimal = {1}", messageLength.ToUpper(), messageLengthInt);
-                encodedData += messageLength;
-                var encodedMessage = StringToSeptetToOctetHex(userDataHeader, message);
-                //Logger.Debug("[7-bit] TP-User-Data = ->{0}<-", encodedMessage.ToUpper());
-                encodedData += encodedMessage;
-                break;
-            }
+                {
+                    var messageLengthInt = CalculateMessageLength7Bit(userDataHeader, message);
+                    var messageLength = Convert.ToString(messageLengthInt, 16).PadLeft(2, '0');
+                    //Logger.Debug("[7-bit] TP-User-Data-Length (msg len) = ->{0}<- decimal = {1}", messageLength.ToUpper(), messageLengthInt);
+                    encodedData += messageLength;
+                    var encodedMessage = StringToSeptetToOctetHexByteArray(userDataHeader, message);
+                    //Logger.Debug("[7-bit] TP-User-Data = ->{0}<-", encodedMessage.ToUpper());
+                    encodedData += encodedMessage;
+                    break;
+                }
             case SMSEncoding._8bit:
-            {
-                var messageLengthInt = CalculateMessageLength8Bit(userDataHeader, message);
-                var messageLength = Convert.ToString(messageLengthInt, 16).PadLeft(2, '0');
-                //Logger.Debug("[8-bit] TP-User-Data-Length (msg len) = ->{0}<- decimal = {1}", messageLength.ToUpper(), messageLengthInt);
-                encodedData += messageLength;
-                var encodedMessage = StringToEightBitHex(userDataHeader, message);
-                //Logger.Debug("[8-bit] TP-User-Data = ->{0}<-", encodedMessage.ToUpper());
-                encodedData += encodedMessage;
-                break;
-            }
+                {
+                    var messageLengthInt = CalculateMessageLength8Bit(userDataHeader, message);
+                    var messageLength = Convert.ToString(messageLengthInt, 16).PadLeft(2, '0');
+                    //Logger.Debug("[8-bit] TP-User-Data-Length (msg len) = ->{0}<- decimal = {1}", messageLength.ToUpper(), messageLengthInt);
+                    encodedData += messageLength;
+                    var encodedMessage = StringToEightBitHex(userDataHeader, message);
+                    //Logger.Debug("[8-bit] TP-User-Data = ->{0}<-", encodedMessage.ToUpper());
+                    encodedData += encodedMessage;
+                    break;
+                }
             case SMSEncoding._UCS2:
-            {
-                var messageBytes = PDUFunctions.EncodeUCS2(message);
-                var messageLengthInt = CalculateMessageLengthUCS2(userDataHeader, messageBytes);
-                var messageLength = Convert.ToString(messageLengthInt, 16).PadLeft(2, '0');
-                //Logger.Debug("[UCS2] TP-User-Data-Length (msg len) = ->{0}<- decimal = {1} Big Endian byte count (msg only) = {2} bytes",messageLength.ToUpper(), messageLengthInt, messageBytes.Length);
-                encodedData += messageLength; //Length of message
-
-                if (userDataHeader != null)
                 {
-                    encodedData += userDataHeader.GetHeaderAsHexString();
-                }
+                    var messageBytes = PDUFunctions.EncodeUCS2(message);
+                    var messageLengthInt = CalculateMessageLengthUCS2(userDataHeader, messageBytes);
+                    var messageLength = Convert.ToString(messageLengthInt, 16).PadLeft(2, '0');
+                    //Logger.Debug("[UCS2] TP-User-Data-Length (msg len) = ->{0}<- decimal = {1} Big Endian byte count (msg only) = {2} bytes",messageLength.ToUpper(), messageLengthInt, messageBytes.Length);
+                    encodedData += messageLength; //Length of message
 
-                foreach (var b in messageBytes)
-                {
-                    var str = Convert.ToString(b, 16).PadLeft(2, '0');
-                    encodedData += str;
+                    if (userDataHeader != null)
+                    {
+                        encodedData += userDataHeader.GetHeaderAsHexString();
+                    }
+
+                    foreach (var b in messageBytes)
+                    {
+                        var str = Convert.ToString(b, 16).PadLeft(2, '0');
+                        encodedData += str;
+                    }
+                    break;
                 }
-                break;
-            }
             case SMSEncoding.ReservedMask:
             default:
                 throw new Exception("Exception switching SMSEncoding.");
@@ -214,7 +217,7 @@ public class PDUEncoder
         return encodedData.ToUpper();
     }
 
-    private  bool NeedsToBeSplit(string message, SMSEncoding smsEncoding)
+    private bool NeedsToBeSplit(string message, SMSEncoding smsEncoding)
     {
         return smsEncoding switch
         {
@@ -345,26 +348,18 @@ public class PDUEncoder
         }
     }
 
-    private  int CalculateMessageLength7Bit(PDUUserDataHeader userDataHeader, string message)
+    private int CalculateMessageLength7Bit(PDUUserDataHeader userDataHeader, string message)
     {
         /*
          * *******************************************************************************************
          * This is important!! The length must be the SEPTET LENGTH(!) of the message or UDH + message
          * *******************************************************************************************
          */
-        var septetList = StringToSeptetList(userDataHeader, message);
-        if (userDataHeader != null)
-        {
-            //Logger.Debug("[7-bit] Message length (attn: in SEPTETS!) [UDH]+[Message] is decimal {0} [UDH] = {1}", septetList.Count, userDataHeader.GetHeaderAsHexString());
-        }
-        else
-        {
-            //Logger.Debug("[7-bit] Message length is decimal {0}, no [UDH] exists", septetList.Count);
-        }
-        return septetList.Count;
+        var septetList = StringToSeptetArray(userDataHeader, message);
+        return septetList.Length;
     }
 
-    private  int CalculateMessageLength8Bit(PDUUserDataHeader userDataHeader, string str)
+    private int CalculateMessageLength8Bit(PDUUserDataHeader userDataHeader, string str)
     {
         var result = str.Length;
         if (userDataHeader != null)
@@ -379,7 +374,7 @@ public class PDUEncoder
         return result;
     }
 
-    private  int CalculateMessageLengthUCS2(PDUUserDataHeader userDataHeader, byte[] bytes)
+    private int CalculateMessageLengthUCS2(PDUUserDataHeader userDataHeader, byte[] bytes)
     {
         var result = bytes.Length;
         if (userDataHeader != null)
@@ -394,7 +389,7 @@ public class PDUEncoder
         return result;
     }
 
-    private  string EncodePhoneNumber(string phoneNumber)
+    private string EncodePhoneNumber(string phoneNumber)
     {
         var isInternational = phoneNumber.StartsWith("+");
         if (isInternational)
@@ -422,13 +417,13 @@ public class PDUEncoder
         return result;
     }
 
-    private  string StringToSeptetToOctetHex(PDUUserDataHeader userDataHeader, string message)
+    private string StringToSeptetToOctetHexByteArray(PDUUserDataHeader userDataHeader, string message)
     {
-        var septetList = StringToSeptetList(userDataHeader, message);
-        return SeptetToOctetHex(userDataHeader, septetList);
+        var byteArray = StringToSeptetArray(userDataHeader, message);
+        return Encode7Bit(userDataHeader, byteArray);
     }
 
-    private  List<string> StringToSeptetList(PDUUserDataHeader userDataHeader, string message)
+    private byte[] StringToSeptetArray(PDUUserDataHeader userDataHeader, string message)
     {
         if (userDataHeader != null)
         {
@@ -438,57 +433,50 @@ public class PDUEncoder
             //'n' first @'s will be overwritten by the UDH leaving the rest (1-6) to be translated to zeroes.
             message = message.Insert(0, userDataHeader.Padding(CodingDirection.Encoding));
         }
+
         var gsmCharSet0338 = new GsmCharSet0338();
-        var septetList = new List<string>();
-        var escByteString = PDUFunctions.ToSevenBits(27);
-
-        var messageLength = message.Length;
-        for (var i = 0; i < messageLength; i++)
+        var byteArray = new byte[message.Length + gsmCharSet0338.ExtendedCharCount(message)];
+        var arrayIndex = 0;
+        foreach (var s in message)
         {
-            var s = message[i];
-
-            var b = gsmCharSet0338.GetByte(s);
             if (gsmCharSet0338.IsExtended(s))
             {
-                //Add escape char before adding extended character
-                septetList.Add(escByteString);
-                ////Logger.Debug("[7-bit] SeptetList[{0}] {1} byte(27) GSM 03.38", (septetList.Count - 1), escByteString);
+                byteArray[arrayIndex++] = GsmCharSet0338.EscapeByte;
             }
-            var septetString = PDUFunctions.ToSevenBits(b);
-            septetList.Add(septetString);
-            ////Logger.Debug("[7-bit] SeptetList[{0}] {1} byte({2}) GSM 03.38", (septetList.Count - 1), septetString, b);
+            byteArray[arrayIndex++] = gsmCharSet0338.GetByte(s);
         }
-        return septetList;
+
+        return byteArray;
     }
 
-    private  string SeptetToOctetHex(PDUUserDataHeader userDataHeader, List<string> septetList)
+    private string Encode7Bit(PDUUserDataHeader userDataHeader, byte[] byteArray)
     {
-        var octetList = new List<string>();
-        //Converting from septet to octet
+        var processedBytes = new List<byte>();
         //-------------
         var numberOfBitsToAdd = 1;
         var currentIndex = 0;
         //-----------
-        while (currentIndex < septetList.Count)
+
+        while (currentIndex < byteArray.Length)
         {
-            var isLastSeptet = currentIndex == septetList.Count - 1;
-            var currentSeptet = septetList[currentIndex];
-            var nextSeptet = isLastSeptet ? "0000000" : septetList[currentIndex + 1];
-            //-------------- Swapping----------
-            var bitsToAddInWrongOrder = PDUFunctions.ReverseString(nextSeptet)[..numberOfBitsToAdd];
-            //----------Reverse Swapping-------
-            var bitsToAdd = PDUFunctions.ReverseString(bitsToAddInWrongOrder);
+            var isLastSeptet = currentIndex == byteArray.Length - 1;
+            var currentSeptet = byteArray[currentIndex];
+            var nextSeptet = isLastSeptet ? (byte)0 : byteArray[currentIndex + 1];
 
-            //Discard the rightmost bits (>8), they have already been added and should be discarded
-            var freshOctet = (bitsToAdd + currentSeptet)[..8];
-            /*Logger.Debug("[7-bit] Taking LeftMost Bits->[{0}] from NextSeptet[{1}] and prepending to Current Septet[{2}] ----> (octet) {3}",
-                bitsToAdd,
-                nextSeptet,
-                currentSeptet,
-                freshOctet);*/
-
-            octetList.Add(freshOctet);
+            /*
+             * Prepend rightmost bits (numberOfBitsToAdd) from next septet to current septet
+             * Bits to add : 4
+             * 1011010 nextSeptet
+             *    ^^^^
+             * 1011001 currentSeptet
+             * ''''
+             * 10101011 newSeptet
+             * ^^^^''''
+             */
+            var newSeptet = ((nextSeptet << 7) | currentSeptet) >> (numberOfBitsToAdd - 1);
+            processedBytes.Add((byte)newSeptet);
             numberOfBitsToAdd++;
+
             if (numberOfBitsToAdd == 8)
             {
                 numberOfBitsToAdd = 1;
@@ -496,29 +484,25 @@ public class PDUEncoder
             }
             currentIndex += 1;
         }
+
         var result = "";
 
-        //Converting from octet to hex
-        foreach (var oct in octetList)
+        foreach (var b in processedBytes)
         {
-            var firstHalf = oct[..4];
-            var secondHalf = oct.Substring(4, 4);
-            var hex1 = PDUFunctions.GetNibbleHexRepresentation(firstHalf);
-            var hex2 = PDUFunctions.GetNibbleHexRepresentation(secondHalf);
-            //Logger.Debug("[7-bit] Octet {0} equals Hex {1}",  oct, hex1 + hex2);
-            result += hex1 + hex2;
+            result += (b >> 4).ToString("X");
+            var nibble = (byte)(b << 4);
+            result += (nibble >> 4).ToString("X");
         }
+
         if (userDataHeader != null)
         {
-            //Logger.Debug("[7-bit] Inserting PDUUserDataHeader ->{0}<- {1}", userDataHeader.GetHeaderAsHexString(), userDataHeader);
-            //Logger.Debug("[7-bit] Message before UDH\n->{0}<-", result);
             result = userDataHeader.GetHeaderAsHexString() + result[(userDataHeader.LengthInOctets() * 2)..];
-            //Logger.Debug("[7-bit] Message after UDH\n->{0}<-", result);
         }
+
         return result;
     }
 
-    private  string StringToEightBitHex(PDUUserDataHeader userDataHeader, string message)
+    private string StringToEightBitHex(PDUUserDataHeader userDataHeader, string message)
     {
         var result = "";
 
