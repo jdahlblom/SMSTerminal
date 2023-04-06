@@ -1,7 +1,5 @@
 ﻿using System.IO.Ports;
-using System.Threading.Channels;
 using SMSTerminal.Commands;
-using SMSTerminal.General;
 using SMSTerminal.Modem;
 using SMSTerminal.SMSMessages;
 

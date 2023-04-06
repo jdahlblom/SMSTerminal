@@ -1,6 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using SMSTerminal.PDU;
 
 namespace SMSTerminal.General;

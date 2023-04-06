@@ -1,7 +1,4 @@
 ﻿using System.Collections;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
 using NLog;
 using SMSTerminal.General;
 

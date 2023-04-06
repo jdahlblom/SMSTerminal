@@ -2,7 +2,6 @@
 using SMSTerminal.General;
 using SMSTerminal.Interfaces;
 using SMSTerminal.Modem;
-using SMSTerminal.SMSMessages;
 
 namespace SMSTerminal.PDU;
 

@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
-using System.IO.Ports;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using NLog;
 using SMSTerminal.Events;

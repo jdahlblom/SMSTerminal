@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using NLog;
+﻿using NLog;
 using SMSTerminal.General;
 
 namespace SMSTerminal.PDU;
@@ -108,7 +107,7 @@ public class PDUDecoder
                     if (currentOctet > 0)
                     {
                         //[Special] Adding a last (& new) septet by copying 7 bits from current octet. 
-                        resultList.Add(currentOctet);
+                        resultList.Add((byte)(currentOctet >> numberOfBitsToKeep));
                     }
                 }
 
